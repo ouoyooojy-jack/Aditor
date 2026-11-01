@@ -144,7 +144,8 @@ export const settingsI18n: Messages['settingsI18n'] = {
       preview: {
         heading: '文件夹结构',
         dayFolder: '日期',
-        recordings: '录制按日期分文件夹',
+        recordings: '临时录像按日期分文件夹，30 天后自动删除',
+        saved: '点“保存”的录像，永久保留',
         merged: '剪辑输出：合并',
         clips: '剪辑输出：逐段'
       }
@@ -221,7 +222,7 @@ export const settingsI18n: Messages['settingsI18n'] = {
     },
     trademark: {
       title: '商标声明',
-      desc: 'Apex Legends 是 Electronic Arts／Respawn 的商标，与本软件无关。',
+      desc: 'Apex Legends 是 Electronic Arts／Respawn 的商标；VALORANT 是 Riot Games 的商标；Counter-Strike 2 是 Valve Corporation 的商标，均与本软件无关。',
       keywords: ['商标', 'apex legends', 'ea', 'respawn', '声明']
     }
   }

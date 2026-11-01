@@ -46,7 +46,7 @@ export const shellI18n: Messages['shellI18n'] = {
       title: '녹화 설정',
       body: '이 설정은 나중에 설정의 녹화 탭에서도 바꿀 수 있습니다.',
       modeLabel: '녹화 모드',
-      modeSessionDesc: 'Apex를 켠 순간부터 끌 때까지, 하나의 완전한 영상으로 저장합니다.',
+      modeSessionDesc: '게임을 켠 순간부터 끌 때까지, 하나의 완전한 영상으로 저장합니다.',
       modeMatchDesc: '매치마다 영상 하나로 저장합니다. 로비는 최근 약 15초만 임시로 보관하므로 디스크를 차지하지 않습니다.',
       resolution: '해상도',
       fps: '프레임 레이트',
@@ -58,7 +58,7 @@ export const shellI18n: Messages['shellI18n'] = {
       summaryMode: '녹화 모드: {mode}',
       summaryQuality: '화질: {height}, {fps} fps, {bitrate} kbps',
       nextHeading: '이제 이런 일이 일어납니다',
-      next1: 'Apex Legends를 실행하면 자동으로 녹화가 시작됩니다.',
+      next1: 'VALORANT 또는 Counter-Strike 2를 실행하면 자동으로 녹화가 시작됩니다.',
       next2: '녹화가 끝나면 자동으로 분석해 하이라이트 장면을 찾습니다.',
       next3: '스튜디오에서 장면을 골라 내보내세요.'
     }

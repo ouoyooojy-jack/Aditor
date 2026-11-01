@@ -144,7 +144,8 @@ export const settingsI18n: Messages['settingsI18n'] = {
       preview: {
         heading: 'フォルダー構成',
         dayFolder: '日付',
-        recordings: '録画は日付ごとにフォルダーを分ける',
+        recordings: '一時録画は日付ごとのフォルダーに入り、30 日後に自動削除',
+        saved: '「保存」した録画。ずっと残ります',
         merged: '編集出力：結合',
         clips: '編集出力：クリップごと'
       }
@@ -221,7 +222,7 @@ export const settingsI18n: Messages['settingsI18n'] = {
     },
     trademark: {
       title: '商標について',
-      desc: 'Apex Legends は Electronic Arts／Respawn の商標であり、本プロジェクトとは無関係です。',
+      desc: 'Apex Legends は Electronic Arts／Respawn、VALORANT は Riot Games、Counter-Strike 2 は Valve Corporation の商標であり、いずれも本プロジェクトとは無関係です。',
       keywords: ['商標', 'apex legends', 'ea', 'respawn', '表記']
     }
   }

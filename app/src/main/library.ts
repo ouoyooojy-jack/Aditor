@@ -3,6 +3,12 @@ import path from 'path'
 import chokidar, { FSWatcher } from 'chokidar'
 import { EventType, type EventCounts } from '../shared/types'
 import type { GameId } from '../shared/games'
+import { DAY_MS, RECORDING_RETENTION_DAYS } from '../shared/storage'
+
+/** When an unsaved recording added at `addedAt` is deleted. */
+export function expiryFor(addedAt: number): number {
+  return addedAt + RECORDING_RETENTION_DAYS * DAY_MS
+}
 
 export type LibraryStatus = 'pending' | 'analyzing' | 'done' | 'error'
 
@@ -12,6 +18,10 @@ export interface LibraryEntry {
   source?: 'recording' | 'external'
   addedAt: number
   favorite: boolean
+  /** The user saved this recording: it was moved to the Saved folder and is never deleted automatically. */
+  saved?: boolean
+  /** Unsaved recordings are deleted after this time (epoch ms); absent for imports and recordings made before expiry existed. */
+  expiresAt?: number
   status: LibraryStatus
   progress: number
   error?: string
@@ -186,6 +196,7 @@ export class Library {
         const entry = this.get(p)!
         if (source === 'recording' && entry.source !== 'recording') {
           entry.source = source
+          if (!entry.saved && entry.expiresAt === undefined) entry.expiresAt = expiryFor(entry.addedAt)
           changed = true
         }
         if (game && !entry.game) {
@@ -195,10 +206,12 @@ export class Library {
         continue
       }
       existing.add(norm)
+      const addedAt = Date.now()
       const entry: LibraryEntry = {
         path: p,
         source,
-        addedAt: Date.now(),
+        addedAt,
+        ...(source === 'recording' ? { expiresAt: expiryFor(addedAt) } : {}),
         favorite: false,
         status: 'pending',
         progress: 0,
@@ -275,6 +288,18 @@ export class Library {
       this.save()
     }
     return { removed, failed }
+  }
+
+  /**
+   * Point an entry at its file's new location (after the file was moved) and apply `patch`; false when the entry is
+   * missing or another entry already uses the new path.
+   */
+  relocate(oldPath: string, newPath: string, patch: Partial<LibraryEntry> = {}): boolean {
+    const entry = this.get(oldPath)
+    if (!entry || (normalizePath(oldPath) !== normalizePath(newPath) && this.get(newPath))) return false
+    Object.assign(entry, patch, { path: newPath })
+    this.save()
+    return true
   }
 
   toggleFavorite(videoPath: string): boolean {

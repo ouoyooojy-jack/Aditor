@@ -15,7 +15,7 @@ export const i18n: Messages['i18n'] = {
   },
   /** main 프로세스의 네이티브 대화상자(제목과 파일 형식 필터) */
   dialog: {
-    selectFilesTitle: 'Apex Legends 녹화 파일 선택',
+    selectFilesTitle: '게임 녹화 파일 선택',
     videoFilter: '동영상 파일',
     selectFolderTitle: '녹화 파일이 들어 있는 폴더 선택',
     addWatchFolderTitle: '감시할 폴더 선택(새 영상은 자동으로 가져오기)',
@@ -44,7 +44,7 @@ export const i18n: Messages['i18n'] = {
     },
     videoCount: '영상 {n}개',
     empty: {
-      title: 'Apex 녹화 영상을 여기에 끌어다 놓으세요',
+      title: '게임 녹화 영상을 여기에 끌어다 놓으세요',
       desc: 'mp4 / mkv / mov / webm을 지원합니다. 새 영상은 자동으로 분석 대기열에 들어가며, 한 번에 한 개씩 분석합니다.',
       step1Title: '가져오기',
       step1Desc: '파일을 끌어다 놓거나 감시 폴더를 지정하세요',
@@ -98,6 +98,13 @@ export const i18n: Messages['i18n'] = {
       av1: 'AV1 · 프록시 파일 권장',
       proxySuggest: '프록시 파일 권장',
       importedTag: '가져온 영상',
+      savedTag: '저장됨',
+      expiresIn: '{n}일 후 삭제',
+      expiresToday: '곧 삭제',
+      expiryHint: '임시 녹화는 30일 후 자동으로 삭제됩니다. "저장"하면 저장 폴더로 옮겨져 계속 보관됩니다.',
+      saveAction: '저장 (계속 보관)',
+      saveDone: '저장 폴더로 옮겼습니다. 자동으로 삭제되지 않습니다.',
+      saveFailed: '저장하지 못했습니다',
       removeSourceConfirm: '‘{name}’을(를) 라이브러리에서 제거하고 원본 영상 파일도 삭제할까요? 이 작업은 취소할 수 없습니다.',
       removeChoiceTitle: '가져온 동영상 제거',
       removeChoiceMessage: '‘{name}’은(는) 가져온 동영상입니다. 원본 동영상 파일을 삭제할까요, 아니면 라이브러리에서만 제거할까요? 원본 파일 삭제는 되돌릴 수 없습니다.',

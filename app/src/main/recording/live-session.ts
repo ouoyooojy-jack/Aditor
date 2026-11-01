@@ -10,7 +10,7 @@ import { EventEmitter } from 'events'
 import { isCounted } from '../../shared/types'
 import { DEFAULT_GAME, type GameId } from '../../shared/games'
 import type { LiveEvent, LiveMatch, LiveSegment, LiveState, LiveUpdate } from '../../shared/recording'
-import { LiveEngine, type LiveMatchEvent, type LiveSnapshot, type LiveSpec } from './live-engine'
+import { LiveEngine, type LiveMatchEvent, type LiveQuality, type LiveRound, type LiveSnapshot, type LiveSpec } from './live-engine'
 import { pruneSegments } from './prune'
 import { initMimeType } from './mp4-codec'
 import { LIVE_COMPLETE_FILE, writeJson } from './finalize'
@@ -73,6 +73,11 @@ export interface LiveSessionOptions {
   /** Write one line to events.jsonl (through the session write queue). */
   recordEvent: (event: Record<string, unknown> & { ev: string }) => void
   notice: (message: string) => void
+  /**
+   * Events come from the game client instead of the detection engine (CS2 Game State Integration): no engine runs,
+   * kills, deaths and rounds arrive through `clientEvent`/`clientRound`, and this string is the cache's engine version.
+   */
+  clientSource?: string
 }
 
 export class LiveSession extends EventEmitter {
@@ -98,8 +103,15 @@ export class LiveSession extends EventEmitter {
   private capturedAt: number | null = null
   /** The game client's last match boundary before capture started; an open match is replayed at time 0. */
   private earlyClientMatch: 'match_start' | 'match_end' | null = null
+  /** Client-driven sessions: event ids and where the current round began (recording time). */
+  private clientEvents = 0
+  private roundStart: number | null = null
 
-  constructor(private options: LiveSessionOptions) { super() }
+  constructor(private options: LiveSessionOptions) {
+    super()
+    // Client events arrive in real time, so every recorded second has been seen by the event source.
+    if (options.clientSource) this.analyzedT = Infinity
+  }
 
   get sessionId(): string { return this.options.sessionId }
 
@@ -111,7 +123,7 @@ export class LiveSession extends EventEmitter {
     if (this.earlyClientMatch === 'match_start') this.clientMatch('match_start', this.capturedAt)
     this.earlyClientMatch = null
     const { command } = this.options
-    if (!command || this.engine) return
+    if (!command || this.engine || this.options.clientSource) return
     if (path.isAbsolute(command.command) && !fs.existsSync(command.command)) {
       this.options.notice(tr('找不到即時偵測引擎（{command}），錄影照常進行，收尾後再分析', { command: command.command }))
       return
@@ -148,7 +160,8 @@ export class LiveSession extends EventEmitter {
   }
 
   async prune(): Promise<void> {
-    const healthy = (): boolean => !!this.engine && this.healthy && !this.failed && Date.now() - this.restartedAt >= 30_000
+    const healthy = (): boolean => (this.options.clientSource ? this.capturedAt !== null : !!this.engine && this.healthy) &&
+      !this.failed && Date.now() - this.restartedAt >= 30_000
     if (!healthy()) return
     const beganAt = Date.now()
     await pruneSegments(this.options.dir, this.segments, this.matches, this.pending, this.analyzedT, healthy, (sequences) => {
@@ -197,6 +210,13 @@ export class LiveSession extends EventEmitter {
   async stop(): Promise<void> {
     try { await this.engine?.stop() } catch (error) { console.warn('[live] Stop failed:', error) }
     await this.flush()
+    if (this.options.clientSource) {
+      // The game client never dropped out, so a recording without matches really was lobby time only.
+      if (this.failed || this.capturedAt === null) return
+      try { await writeJson(path.join(this.options.dir, LIVE_COMPLETE_FILE), { version: 1 }) }
+      catch (error) { console.warn('[live] Failed to write detection completion marker:', error) }
+      return
+    }
     // Set the marker only if detection stayed healthy throughout. In per-match mode, no matches at finalization means the user stayed in the lobby, so do not output the full recording.
     // A killed engine sends no final snapshot and a lossy one reports incomplete; both may have missed a match, so keep the footage.
     if (!this.engine || !this.healthy || this.failed || this.engine.quality()?.complete !== true) return
@@ -234,7 +254,41 @@ export class LiveSession extends EventEmitter {
       this.earlyClientMatch = ev
       return
     }
-    this.onMatch({ ev, t: Math.max(0, (at - this.capturedAt) / 1000), reason: 'game_client' })
+    const t = Math.max(0, (at - this.capturedAt) / 1000)
+    if (ev === 'match_start') this.roundStart = t
+    this.onMatch({ ev, t, reason: 'game_client' })
+  }
+
+  /** A kill or death the game client reported at wall time `at` (ms); events before capture started are not in the video. */
+  clientEvent(type: 'kill' | 'death', at: number, extra: { headshot?: boolean } = {}): void {
+    if (this.capturedAt === null) return
+    const t = Math.max(0, (at - this.capturedAt) / 1000)
+    const event = {
+      id: `gsi-${++this.clientEvents}`, t, type, score: 1, damage_line: false, name_sig: null,
+      counted: type === 'kill', counted_reason: 'game_client', counted_override: null, source: 'auto',
+      ...(extra.headshot ? { headshot: true } : {})
+    } as LiveEvent
+    this.snapshot = { ...this.snapshot, t: Math.max(this.snapshot.t, t), events: [...this.snapshot.events, event] }
+    this.scheduleWrite()
+    this.emitUpdate({ events: this.snapshot.events, spectating: this.snapshot.spectating })
+    this.emit('stats')
+  }
+
+  /** A round the game client reported finished at wall time `at` (ms); it began at the previous round end or the match start. */
+  clientRound(winner: 'ally' | 'enemy', ally: number, enemy: number, at: number): void {
+    if (this.capturedAt === null) return
+    const end = Math.max(0, (at - this.capturedAt) / 1000)
+    const start = Math.min(end, this.roundStart ?? this.matches.at(-1)?.start ?? end)
+    this.roundStart = end
+    const round: LiveRound = { start, end, winner, ally, enemy }
+    this.snapshot = { ...this.snapshot, rounds: [...(this.snapshot.rounds ?? []), round] }
+    this.scheduleWrite()
+  }
+
+  private quality(): LiveQuality | null {
+    if (this.engine) return this.engine.quality()
+    if (!this.options.clientSource) return null
+    return { complete: !this.failed, reasons: this.failed ? ['game_client_unavailable'] : [], hScale: null }
   }
 
   private onMatch(event: LiveMatchEvent): void {
@@ -271,11 +325,11 @@ export class LiveSession extends EventEmitter {
     this.writing = this.writing.then(async () => {
       this.dirty = false
       await writeJson(path.join(this.options.dir, LIVE_FILE), {
-        version: 1, engine_version: this.engine?.engineVersion() ?? null,
+        version: 1, engine_version: this.engine?.engineVersion() ?? this.options.clientSource ?? null,
         t: this.snapshot.t, events: this.snapshot.events, spectating: this.snapshot.spectating as LiveSpec[],
         ...(this.snapshot.rounds ? { rounds: this.snapshot.rounds } : {}),
         matches: this.matches, retained_from: this.retainedFrom(),
-        width: this.width, height: this.height, quality: this.engine?.quality() ?? null
+        width: this.width, height: this.height, quality: this.quality()
       })
       this.writeError = null
     }).catch((error) => {

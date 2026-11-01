@@ -8,9 +8,10 @@ import { useQueueEta, useQueueItemState } from '../queue/QueueProvider'
 import { i18n } from '../i18n'
 import { nextTrapIndex } from '../a11y/focusTrap'
 import { rovingStep } from '../a11y/roving'
-import { AlertTriangle, Check, ImageOff, MoreHorizontal, RefreshCw, Scissors, Star, Trash2 } from '../components/icons'
+import { AlertTriangle, Check, ImageOff, MoreHorizontal, RefreshCw, Save, Scissors, Star, Trash2 } from '../components/icons'
+import { retentionDaysLeft } from '../../shared/storage'
 import { cardStatusText, fileName, thumbnailUrl } from './cardLogic'
-import { GAMES, GAME_IDS, gameOf, type GameId } from '../../shared/games'
+import { ANALYZABLE_GAME_IDS, GAMES, gameOf, type GameId } from '../../shared/games'
 import { entryGame } from '../lib/libraryFilter'
 
 export { fileName } from './cardLogic'
@@ -30,6 +31,8 @@ export interface VideoCardProps {
   onSetGame?: (path: string, game: GameId) => void
   /** Split an analyzed video that holds several matches into one file per match. */
   onSplitMatches?: (path: string) => void
+  /** Move a temporary recording into the Saved folder so it is kept instead of expiring. */
+  onSave?: (path: string) => void
   /** Report when the card menu opens/closes (include a close function when opening); keymap handles Esc in menu-then-search order. */
   onMenuChange?: (path: string, close: (() => void) | null) => void
   /** Proxy suggestion setting: hide the proxy-suggestion badge when false (defaults to true). */
@@ -69,6 +72,8 @@ export function sameCardEntry(a: LibraryEntry, b: LibraryEntry): boolean {
     a.progress === b.progress &&
     a.analyzingSince === b.analyzingSince &&
     a.favorite === b.favorite &&
+    a.saved === b.saved &&
+    a.expiresAt === b.expiresAt &&
     a.error === b.error &&
     a.errorCode === b.errorCode &&
     a.game === b.game &&
@@ -83,7 +88,7 @@ export function sameCardEntry(a: LibraryEntry, b: LibraryEntry): boolean {
   )
 }
 
-function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onSetGame, onSplitMatches, onMenuChange, proxySuggest = true, active = true, selectionMode = false, selected = false, onToggleSelect }: VideoCardProps): JSX.Element {
+function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onSetGame, onSplitMatches, onSave, onMenuChange, proxySuggest = true, active = true, selectionMode = false, selected = false, onToggleSelect }: VideoCardProps): JSX.Element {
   const [menuOpen, setMenuOpen] = useState(false)
   const rootRef = useRef<HTMLElement>(null)
   const moreRef = useRef<HTMLButtonElement>(null)
@@ -98,7 +103,11 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
   const done = entry.status === 'done'
   const error = entry.status === 'error'
   const unknownGame = error && entry.errorCode === 'unknown_game'
+  /** CS2 recordings carry Game State Integration events only; the engine cannot (re)analyze them. */
+  const analyzable = GAMES[gameOf(entry.game)].analyzable
   const gameTag = entryGame(entry)
+  const temporary = entry.source === 'recording' && !entry.saved && typeof entry.expiresAt === 'number'
+  const daysLeft = temporary ? retentionDaysLeft(entry.expiresAt!) : null
   // Waiting refers only to main's real queue; pending items not in the queue (imported but not queued, or canceled) are not analyzed yet.
   const queueState = useQueueItemState(entry.path)
   const notQueued = entry.status === 'pending' && queueState === 'idle'
@@ -282,6 +291,12 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
             <span className="vcard-meta">
               {gameTag && <span className={`vcard-game ${gameTag}`}>{GAMES[gameTag].displayName}</span>}
               {entry.source === 'external' && <span className="vcard-imported">{t.importedTag}</span>}
+              {entry.saved && <span className="vcard-saved">{t.savedTag}</span>}
+              {daysLeft !== null && (
+                <span className={`vcard-expiry${daysLeft <= 3 ? ' soon' : ''}`} title={t.expiryHint}>
+                  {daysLeft === 0 ? t.expiresToday : t.expiresIn.replace('{n}', String(daysLeft))}
+                </span>
+              )}
               <span>{new Date(entry.addedAt).toLocaleString('zh-TW', { hour12: false })}</span>
               {entry.codec ? <span className="vcard-codec">{entry.codec.toUpperCase()}</span> : null}
             </span>
@@ -317,6 +332,19 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
         </button>
       )}
 
+      {!selectionMode && temporary && onSave && (
+        <button
+          type="button"
+          className="vcard-keep"
+          aria-label={t.saveAction}
+          title={t.saveAction}
+          tabIndex={tab}
+          onClick={() => onSave(entry.path)}
+        >
+          <Save className="ic" />
+        </button>
+      )}
+
       {!selectionMode && notQueued && (
         <button type="button" className="lib-btn sm primary vcard-analyze" tabIndex={tab} onClick={() => onRetry(entry.path)}>
           {t.analyze}
@@ -326,7 +354,7 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
       {!selectionMode && error && (
         <div className="vcard-error-actions">
           {unknownGame && onSetGame ? (
-            GAME_IDS.map((game) => (
+            ANALYZABLE_GAME_IDS.map((game) => (
               <button key={game} type="button" className="lib-btn sm primary" tabIndex={tab} onClick={() => onSetGame(entry.path, game)}>
                 {GAMES[game].displayName}
               </button>
@@ -359,7 +387,21 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
           </button>
           {menuOpen && (
             <div className="vcard-menu" role="menu" aria-labelledby={moreId} ref={menuRef} onKeyDown={onMenuKeyDown}>
-              {(done || error) && (
+              {temporary && onSave && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabIndex={-1}
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onSave(entry.path)
+                  }}
+                >
+                  <Save className="ic sm" />
+                  {t.saveAction}
+                </button>
+              )}
+              {(done || error) && analyzable && (
                 <button
                   type="button"
                   role="menuitem"
@@ -373,7 +415,7 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
                   {t.reanalyze}
                 </button>
               )}
-              {(done || error) && onSetGame && !unknownGame && GAME_IDS.filter((game) => game !== gameOf(entry.game)).map((game) => (
+              {(done || error) && onSetGame && !unknownGame && analyzable && ANALYZABLE_GAME_IDS.filter((game) => game !== gameOf(entry.game)).map((game) => (
                 <button
                   key={game}
                   type="button"
@@ -388,7 +430,7 @@ function VideoCardView({ entry, onOpen, onToggleFavorite, onRemove, onRetry, onS
                   {t.analyzeAs.replace('{game}', GAMES[game].displayName)}
                 </button>
               ))}
-              {done && onSplitMatches && (
+              {done && onSplitMatches && analyzable && (
                 <button
                   type="button"
                   role="menuitem"

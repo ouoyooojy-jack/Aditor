@@ -7,6 +7,7 @@ import type { EventCounts } from '../../shared/types'
 import type { RecordingService, RecordingSettings } from '../../shared/recording'
 import type { GameProcess } from './game-watcher'
 import type { ValorantClient } from './valorant-client'
+import type { Cs2Client, Cs2GsiConfig } from './cs2-gsi'
 import { RecordingSessionService } from './session'
 import type { StorageKind } from './storage-location'
 import type { ChildDiagnosticHandler } from '../../shared/child-diagnostics'
@@ -34,6 +35,10 @@ export interface RecordingDeps {
   gameStartDelayMs?: number
   /** Test injection: the Riot Client local API client used for Valorant match boundaries. */
   createValorantClient?: () => ValorantClient
+  /** CS2 Game State Integration endpoint written into CS2's cfg folder; without it CS2 records whole sessions without events. */
+  cs2Gsi?: Cs2GsiConfig
+  /** Test injection: the CS2 Game State Integration receiver. */
+  createCs2Client?: () => Cs2Client
   /** Diagnostic log, flushed line by line so recorder activity remains visible after a system crash. */
   log?: (message: string) => void
   probeVideo?: (file: string) => Promise<{ duration: number; width?: number; height?: number; codec?: string }>

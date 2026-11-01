@@ -1,0 +1,4 @@
+{
+  "templates_version": "cs2-gsi@1",
+  "capture_rois": {"banner": [0, 0, 16, 16], "spec": [0, 0, 16, 16]}
+}

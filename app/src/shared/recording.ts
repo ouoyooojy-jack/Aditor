@@ -97,7 +97,8 @@ export const DEFAULT_RECORDING_SETTINGS: RecordingSettings = {
   obsPort: 4455,
   obsPasswordEnc: null,
   obsFallbackBuiltin: true,
-  mode: 'session',
+  // One file per match (Valorant via the Riot Client, CS2 via Game State Integration); overtime stays in its match.
+  mode: 'match',
   outputDir: null,
   codec: 'hevc',
   gpu: 'auto',

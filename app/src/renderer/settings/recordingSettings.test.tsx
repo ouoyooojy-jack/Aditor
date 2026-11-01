@@ -227,9 +227,9 @@ describe('Recording settings screen and controller', () => {
     await Promise.all([r.controller.setRecording('fps', 90), r.controller.setRecording('micEnabled', false)])
     expect(r.controller.getState().settings?.recording).toMatchObject({ fps: 90, micEnabled: false })
     r.api.settings.set = async () => { throw new Error('ipc') }
-    await r.controller.setRecording('mode', 'match')
+    await r.controller.setRecording('mode', 'session')
     expect(r.controller.getState().settings?.recording.fps).toBe(90)
-    expect(r.controller.getState().settings?.recording.mode).toBe('session')
+    expect(r.controller.getState().settings?.recording.mode).toBe('match')
     expect(r.controller.getState().saveFailed).toBe(true)
     r.controller.stop()
     expect(r.listeners.size).toBe(0)

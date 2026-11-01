@@ -6,12 +6,12 @@ export interface GameProcess {
   pid: number
 }
 
-/** Returns the first supported game in `tasklist /FO CSV /NH` output, in listing order. */
+/** Returns the first game recorded automatically in `tasklist /FO CSV /NH` output, in listing order. */
 export function parseGameProcess(output: string): GameProcess | null {
   for (const line of output.split(/\r?\n/)) {
     const match = /^"([^"]+)","(\d+)"/.exec(line.trim())
     if (!match) continue
-    const game = GAME_IDS.find((id) => GAMES[id].process.test(match[1]))
+    const game = GAME_IDS.find((id) => GAMES[id].autoRecord && GAMES[id].process.test(match[1]))
     const pid = Number(match[2])
     if (game && Number.isSafeInteger(pid) && pid > 0 && pid <= 0xffffffff) return { game, pid }
   }

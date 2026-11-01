@@ -15,7 +15,7 @@ import { ProjectStore } from './projects'
 import { registerProjectHandlers } from './project-ipc'
 import { fileExistsSafe, isSafeLocalDirPath, isSafeLocalVideoPath } from './safe-path'
 import { planCacheSave, requireVideoPath, sanitizeRemoveOptions } from './ipc-guards'
-import { gameOf, isGameId } from '../shared/games'
+import { GAMES, gameOf, isGameId } from '../shared/games'
 import { DEFAULT_SETTINGS } from '../shared/settings'
 import { currentE2EConfig } from './e2e'
 import { cacheDir, engineCommand, ffmpegExecutable, noticesFile, sceneDir } from '../shared/paths'
@@ -128,7 +128,7 @@ export function registerIpcHandlers(
 
   /** The user says which game a video shows (after recognition failed, or to correct it); analyze it as that game. */
   ipcMain.handle('library:setGame', (_, videoPath: unknown, game: unknown) => {
-    if (typeof videoPath !== 'string' || !isGameId(game) || !library.get(videoPath)) return false
+    if (typeof videoPath !== 'string' || !isGameId(game) || !GAMES[game].analyzable || !library.get(videoPath)) return false
     library.update(videoPath, { game, status: 'pending', progress: 0, error: undefined, errorCode: undefined })
     requireLibrarySaved()
     queue.enqueue(videoPath)
@@ -145,7 +145,7 @@ export function registerIpcHandlers(
   let activeSplit: { controller: AbortController; done: Promise<unknown> } | null = null
   ipcMain.handle('library:splitMatches', async (_, videoPath: unknown) => {
     const entry = typeof videoPath === 'string' ? library.get(videoPath) : undefined
-    if (!entry || entry.status !== 'done' || !isSafeLocalVideoPath(entry.path)) {
+    if (!entry || entry.status !== 'done' || !isSafeLocalVideoPath(entry.path) || !GAMES[gameOf(entry.game)].analyzable) {
       return { ok: false, reason: 'failed' }
     }
     if (activeSplit) return { ok: false, reason: 'busy' }

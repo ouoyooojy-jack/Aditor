@@ -75,6 +75,8 @@ const api = {
     remove: (path: string, opts?: { deleteSource?: boolean }) => ipcRenderer.invoke('library:remove', path, opts),
     removeMany: (paths: string[], opts?: { deleteSource?: boolean }) => ipcRenderer.invoke('library:removeMany', paths, opts),
     toggleFavorite: (path: string) => ipcRenderer.invoke('library:toggleFavorite', path),
+    /** Move a recording from the temporary folder into the Saved folder so it is never deleted automatically. */
+    save: (path: string) => ipcRenderer.invoke('library:save', path),
     setGame: (path: string, game: string) => ipcRenderer.invoke('library:setGame', path, game),
     splitMatches: (path: string) => ipcRenderer.invoke('library:splitMatches', path),
     selectFiles: () => ipcRenderer.invoke('library:selectFiles'),

@@ -14,7 +14,7 @@ async function rig(server: Awaited<ReturnType<typeof fakeObs>> | null, fallback 
   const root = tempRoot(); cleanup.push(() => fs.rmSync(root, { recursive: true, force: true }))
   const trace = path.join(root, 'trace.jsonl')
   const deps = makeDeps(root)
-  deps.getSettings = () => ({ ...makeDeps(root).getSettings(), autoRecord: false, backend: 'obs', obsPort: server?.port ?? 1,
+  deps.getSettings = () => ({ ...makeDeps(root).getSettings(), autoRecord: false, mode: 'session', backend: 'obs', obsPort: server?.port ?? 1,
     obsFallbackBuiltin: fallback })
   deps.recorderCommand = fakeCommand('normal', { FAKE_RECORDER_TRACE: trace })
   deps.liveEngineCommand = fakeLiveCommand()

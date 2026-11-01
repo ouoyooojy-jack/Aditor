@@ -14,7 +14,7 @@ export const i18n: Messages['i18n'] = {
   },
   /** Main-process native dialogs (titles and file type filters) */
   dialog: {
-    selectFilesTitle: 'Apex Legends の録画ファイルを選択',
+    selectFilesTitle: 'ゲームの録画ファイルを選択',
     videoFilter: '動画ファイル',
     selectFolderTitle: '録画が入っているフォルダーを選択',
     addWatchFolderTitle: '監視するフォルダーを選択（新しい動画は自動で取り込み）',
@@ -43,7 +43,7 @@ export const i18n: Messages['i18n'] = {
     },
     videoCount: '{n} 本の動画',
     empty: {
-      title: 'Apex の録画をここにドラッグ',
+      title: 'ゲームの録画をここにドラッグ',
       desc: 'mp4 / mkv / mov / webm に対応しています。新しい動画は自動で分析キューに入り、一度に 1 本ずつ分析されます。',
       step1Title: '取り込み',
       step1Desc: 'ファイルをドラッグ＆ドロップするか、監視フォルダーを指定',
@@ -97,6 +97,13 @@ export const i18n: Messages['i18n'] = {
       av1: 'AV1 · プロキシファイル推奨',
       proxySuggest: 'プロキシファイルを推奨',
       importedTag: 'インポート',
+      savedTag: '保存済み',
+      expiresIn: 'あと {n} 日で削除',
+      expiresToday: 'まもなく削除',
+      expiryHint: '一時録画は 30 日後に自動で削除されます。「保存」すると保存フォルダーへ移動して残ります。',
+      saveAction: '保存（ずっと残す）',
+      saveDone: '保存フォルダーへ移動しました。自動では削除されません。',
+      saveFailed: '保存できませんでした',
       removeSourceConfirm: '「{name}」をライブラリから削除し、元の動画ファイルも削除しますか？この操作は取り消せません。',
       removeChoiceTitle: 'インポートした動画を削除',
       removeChoiceMessage: '「{name}」はインポートされた動画です。元動画ファイルを削除しますか、それともライブラリから削除するだけですか？元ファイルの削除は取り消せません。',

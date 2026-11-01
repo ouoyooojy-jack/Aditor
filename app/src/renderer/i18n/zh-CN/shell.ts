@@ -45,7 +45,7 @@ export const shellI18n: Messages['shellI18n'] = {
       title: '录制设置',
       body: '这些设置之后都可以在“设置”的“录制”标签页中调整。',
       modeLabel: '录制模式',
-      modeSessionDesc: 'Apex 开着到关闭，保存为一个完整的视频。',
+      modeSessionDesc: '游戏开着到关闭，保存为一个完整的视频。',
       modeMatchDesc: '每一局保存为一个视频；大厅只暂存最近约 15 秒，不占硬盘。',
       resolution: '分辨率',
       fps: '帧率',
@@ -57,7 +57,7 @@ export const shellI18n: Messages['shellI18n'] = {
       summaryMode: '录制模式：{mode}',
       summaryQuality: '画质：{height}、{fps} fps、{bitrate} kbps',
       nextHeading: '接下来会发生的事',
-      next1: '打开 Apex Legends 后会自动开始录制。',
+      next1: '打开 VALORANT 或 Counter-Strike 2 后会自动开始录制。',
       next2: '录制结束后会自动分析，找出精彩片段。',
       next3: '到“工作室”挑选片段并导出。'
     }

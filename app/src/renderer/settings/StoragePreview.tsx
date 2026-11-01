@@ -4,17 +4,19 @@ import {
   EXPORT_CLIPS_DIRNAME,
   EXPORT_MERGED_DIRNAME,
   RECORDINGS_DIRNAME,
+  SAVED_DIRNAME,
   joinForDisplay
 } from '../../shared/storage'
 
 /**
  * Preview the storage folder structure (shared by settings and onboarding):
- * list the actual paths and purposes of the three subfolders under the root folder.
+ * list the actual paths and purposes of the subfolders under the root folder.
  */
 export function StoragePreview({ root }: { root: string }): JSX.Element {
   const t = settingsI18n.row.storageRoot.preview
   const lines: Array<{ key: string; path: string; label: string }> = [
     { key: 'recordings', path: joinForDisplay(root, RECORDINGS_DIRNAME, t.dayFolder), label: t.recordings },
+    { key: 'saved', path: joinForDisplay(root, SAVED_DIRNAME, t.dayFolder), label: t.saved },
     { key: 'merged', path: joinForDisplay(root, EXPORTS_DIRNAME, EXPORT_MERGED_DIRNAME), label: t.merged },
     { key: 'clips', path: joinForDisplay(root, EXPORTS_DIRNAME, EXPORT_CLIPS_DIRNAME), label: t.clips }
   ]

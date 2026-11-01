@@ -13,7 +13,7 @@ const i18n = {
   },
   /** Main-process native dialogs (titles and file type filters) */
   dialog: {
-    selectFilesTitle: '選擇 Apex Legends 錄影檔案',
+    selectFilesTitle: '選擇遊戲錄影檔案',
     videoFilter: '影片檔案',
     selectFolderTitle: '選擇包含錄影的資料夾',
     addWatchFolderTitle: '選擇要監看的資料夾（新影片自動匯入）',
@@ -42,7 +42,7 @@ const i18n = {
     },
     videoCount: '{n} 支影片',
     empty: {
-      title: '把 Apex 錄影拖進來',
+      title: '把遊戲錄影拖進來',
       desc: '支援 mp4 / mkv / mov / webm。新影片會自動排入分析，一次分析一支。',
       step1Title: '匯入',
       step1Desc: '拖放檔案，或指定監看資料夾',
@@ -96,6 +96,13 @@ const i18n = {
       av1: 'AV1 · 建議代理檔',
       proxySuggest: '建議代理檔',
       importedTag: '外部匯入',
+      savedTag: '已保存',
+      expiresIn: '{n} 天後刪除',
+      expiresToday: '即將刪除',
+      expiryHint: '暫存錄影會在 30 天後自動刪除；按「保存」移到保存資料夾即可永久保留',
+      saveAction: '保存（永久保留）',
+      saveDone: '已移到保存資料夾，不會自動刪除',
+      saveFailed: '保存失敗',
       removeSourceConfirm: '確定要從影片庫移除「{name}」並刪除來源影片檔案嗎？此操作無法復原。',
       removeChoiceTitle: '移除外部匯入影片',
       removeChoiceMessage: '「{name}」是外部匯入的影片。要刪除來源影片檔案，還是只從影片庫移除？刪除來源檔案無法復原。',
@@ -551,7 +558,7 @@ const shellI18n = {
       title: '錄影設定',
       body: '這些設定之後都能在「設定」的「錄影」分頁調整。',
       modeLabel: '錄影模式',
-      modeSessionDesc: 'Apex 開著到關閉，存成一支完整的影片。',
+      modeSessionDesc: '遊戲開著到關閉，存成一支完整的影片。',
       modeMatchDesc: '每一局存成一支影片；大廳只暫存最近約 15 秒，不佔硬碟。',
       resolution: '解析度',
       fps: '影格率',
@@ -563,7 +570,7 @@ const shellI18n = {
       summaryMode: '錄影模式：{mode}',
       summaryQuality: '畫質：{height}、{fps} fps、{bitrate} kbps',
       nextHeading: '接下來會發生的事',
-      next1: '開啟 Apex Legends 後會自動開始錄影。',
+      next1: '開啟 VALORANT 或 Counter-Strike 2 後會自動開始錄影。',
       next2: '錄影結束後會自動分析，找出精彩片段。',
       next3: '到「工作室」挑選片段並輸出。'
     }
@@ -763,7 +770,8 @@ const settingsI18n = {
       preview: {
         heading: '資料夾結構',
         dayFolder: '日期',
-        recordings: '錄影依日期分資料夾',
+        recordings: '暫存錄影依日期分資料夾，30 天後自動刪除',
+        saved: '按「保存」的錄影，永久保留',
         merged: '剪輯輸出：合併',
         clips: '剪輯輸出：一段一段'
       }
@@ -840,7 +848,7 @@ const settingsI18n = {
     },
     trademark: {
       title: '商標聲明',
-      desc: 'Apex Legends 為 Electronic Arts／Respawn 之商標，與本專案無關。',
+      desc: 'Apex Legends 為 Electronic Arts／Respawn 之商標；VALORANT 為 Riot Games 之商標；Counter-Strike 2 為 Valve Corporation 之商標，皆與本專案無關。',
       keywords: ['商標', 'apex legends', 'ea', 'respawn', '聲明']
     }
   }
@@ -871,9 +879,9 @@ const recordingI18n = {
   obsStandby: '待命（OBS，等待對局）',
   detectionOnly: '即時偵測中（未錄影）',
   rows: {
-    autoRecord: { title: '自動錄影', desc: '偵測到 Apex 啟動後自動開始錄影。' },
+    autoRecord: { title: '自動錄影', desc: '偵測到 VALORANT 或 CS2 啟動後自動開始錄影。' },
     launchAtLogin: { title: '開機啟動並常駐系統匣', desc: '開機時在背景啟動 Aditor。' },
-    closeToTray: { title: '關閉視窗時縮到系統匣', desc: '關閉視窗後繼續偵測 Apex 與錄影。' },
+    closeToTray: { title: '關閉視窗時縮到系統匣', desc: '關閉視窗後繼續偵測遊戲與錄影。' },
     backend: { title: '錄影後端', desc: '選擇負責錄製影片的錄影器，下次開始時生效。' },
     obsHost: { title: 'OBS 主機', desc: 'WebSocket 伺服器的主機名稱或 IP 位址。' },
     obsPort: { title: 'OBS 連接埠', desc: '預設為 4455。' },
@@ -884,7 +892,7 @@ const recordingI18n = {
     diskWarnGb: { title: '磁碟提醒門檻', desc: '剩餘空間低於此值時通知。' },
     diskStopGb: { title: '磁碟停止門檻', desc: '剩餘空間低於此值時停止錄影並收尾；不可高於提醒門檻。' },
     notifyMatch: { title: '對局通知', desc: '對局偵測完成後，通知對局開始與結束；錯誤一律通知。' },
-    openOnGameExit: { title: '遊戲結束時開啟 Aditor', desc: '偵測到 Apex 關閉時自動顯示 Aditor 視窗。' },
+    openOnGameExit: { title: '遊戲結束時開啟 Aditor', desc: '偵測到遊戲關閉時自動顯示 Aditor 視窗。' },
     height: { title: '解析度', desc: '原生解析度保留遊戲畫面大小。' },
     bitrateKbps: { title: '位元率 (kbps)', desc: '數值越高，檔案越大。' },
     fps: { title: '影格率 (FPS)', desc: '每秒錄製的影格數。' },
@@ -902,7 +910,7 @@ const recordingI18n = {
     micEnabled: { title: '錄製麥克風', desc: '將麥克風與系統聲音混成一軌。' },
     captureDevice: { title: '麥克風裝置', desc: '選擇錄影使用的麥克風。' },
     micGain: { title: '麥克風音量', desc: '100% 為原始音量，最高 200%。' },
-    gameAudioOnly: { title: '系統聲音只錄遊戲', desc: '只錄 Apex 的聲音，YouTube、Discord 等其他程式的聲音不會錄進去；需要 Windows 組建 20348 以後的版本，不支援時自動改錄整個系統聲音。' },
+    gameAudioOnly: { title: '系統聲音只錄遊戲', desc: '只錄遊戲的聲音，YouTube、Discord 等其他程式的聲音不會錄進去；需要 Windows 組建 20348 以後的版本，不支援時自動改錄整個系統聲音。' },
     micMono: { title: '麥克風強制單聲道', desc: '麥克風只有單邊有聲音時開啟。' }
   },
   auto: '自動',
@@ -911,7 +919,7 @@ const recordingI18n = {
   match: '一局一個檔',
   native: '原生',
   analysisNone: '不分析',
-  analysisAfterExit: '關閉 Apex 後',
+  analysisAfterExit: '關閉遊戲後',
   analysisPerMatch: '每局結束後',
   captureHook: 'Hook擷取（高效率）',
   captureWgc: '視窗擷取（WGC，中效率）',
@@ -965,7 +973,7 @@ const recordingI18n = {
   start: '開始錄影',
   stop: '停止錄影',
   pauseAuto: '暫停自動錄影',
-  apexNotRunning: '無法開始錄影，請確認 Apex 正在執行。',
+  apexNotRunning: '無法開始錄影，請確認 VALORANT 或 CS2 正在執行。',
   serviceUnavailable: '無法取得錄影狀態，請確認錄影服務已啟動。',
   actionFailed: '錄影操作失敗，請再試一次。',
   watchLive: '觀看當局',

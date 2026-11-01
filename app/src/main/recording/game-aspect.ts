@@ -49,6 +49,8 @@ export async function readGameAspect(game: GameId = DEFAULT_GAME, home = os.home
   localAppData = process.env.LOCALAPPDATA ?? path.join(home, 'AppData', 'Local')): Promise<string | null> {
   try {
     if (game === 'valorant') return parseValorantSettings(await latestValorantSettings(localAppData))
+    // CS2 has no detection engine that needs the HUD layout.
+    if (game === 'cs2') return null
     return parseVideoConfig(await fs.promises.readFile(apexVideoConfigPath(home), 'utf8'))
   } catch {
     return null

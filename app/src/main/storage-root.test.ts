@@ -51,7 +51,7 @@ describe('prepareStorageRoot', () => {
   test('does not leave the write-probe file behind', () => {
     const root = path.join(tmp, 'Apex')
     prepareStorageRoot(root)
-    expect(fs.readdirSync(root).sort()).toEqual(['Exports', 'Recordings'])
+    expect(fs.readdirSync(root).sort()).toEqual(['Exports', 'Recordings', 'Saved'])
   })
 })
 

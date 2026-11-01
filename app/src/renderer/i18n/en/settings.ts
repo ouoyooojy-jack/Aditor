@@ -143,7 +143,8 @@ export const settingsI18n: Messages['settingsI18n'] = {
       preview: {
         heading: 'Folder layout',
         dayFolder: 'Date',
-        recordings: 'Recordings are sorted into date folders',
+        recordings: 'Temporary recordings in date folders, deleted after 30 days',
+        saved: 'Recordings you saved, kept forever',
         merged: 'Clip exports: merged',
         clips: 'Clip exports: separate clips'
       }
@@ -220,7 +221,7 @@ export const settingsI18n: Messages['settingsI18n'] = {
     },
     trademark: {
       title: 'Trademark notice',
-      desc: 'Apex Legends is a trademark of Electronic Arts / Respawn. This project is not affiliated with EA or Respawn.',
+      desc: 'Apex Legends is a trademark of Electronic Arts / Respawn, VALORANT of Riot Games, and Counter-Strike 2 of Valve Corporation. This project is not affiliated with any of them.',
       keywords: ['trademark', 'apex legends', 'ea', 'respawn', 'notice']
     }
   }

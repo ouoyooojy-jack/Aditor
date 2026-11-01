@@ -13,7 +13,7 @@ export const i18n: Messages['i18n'] = {
     editor: 'Editor'
   },
   dialog: {
-    selectFilesTitle: 'Select Apex Legends recording files',
+    selectFilesTitle: 'Select game recording files',
     videoFilter: 'Video files',
     selectFolderTitle: 'Select a folder containing recordings',
     addWatchFolderTitle: 'Select a folder to watch (new videos are imported automatically)',
@@ -41,7 +41,7 @@ export const i18n: Messages['i18n'] = {
     },
     videoCount: 'Videos: {n}',
     empty: {
-      title: 'Drag Apex recordings here',
+      title: 'Drag game recordings here',
       desc: 'Supports mp4 / mkv / mov / webm. New videos are queued for analysis automatically, one at a time.',
       step1Title: 'Import',
       step1Desc: 'Drag and drop files, or set a watch folder',
@@ -95,6 +95,13 @@ export const i18n: Messages['i18n'] = {
       av1: 'AV1 · Proxy recommended',
       proxySuggest: 'Proxy recommended',
       importedTag: 'Imported',
+      savedTag: 'Saved',
+      expiresIn: 'Deleted in {n} d',
+      expiresToday: 'Deleting soon',
+      expiryHint: 'Temporary recordings are deleted after 30 days. Save one to move it to the Saved folder and keep it.',
+      saveAction: 'Save (keep forever)',
+      saveDone: 'Moved to the Saved folder. It will not be deleted automatically.',
+      saveFailed: 'Could not save',
       removeSourceConfirm: 'Remove "{name}" from the library and delete the source video file? This cannot be undone.',
       removeChoiceTitle: 'Remove imported video',
       removeChoiceMessage: '"{name}" is an imported video. Delete the source video file, or remove it from the library only? Deleting the source file cannot be undone.',

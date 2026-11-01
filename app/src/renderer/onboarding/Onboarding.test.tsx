@@ -66,14 +66,14 @@ describe('Onboarding step content', () => {
     expect(out).toContain(t.back)
   })
 
-  test('Step 3: recording mode radio cards (session selected by default) and default resolution, frame rate, and bitrate', () => {
+  test('Step 3: recording mode radio cards (match selected by default) and default resolution, frame rate, and bitrate', () => {
     const out = html(2)
     expect(out).toContain('一局一個檔')
     expect(out).toContain('從頭錄到尾')
     expect(out).toContain(t.recording.modeMatchDesc)
     expect(out).toContain(t.recording.modeSessionDesc)
-    expect(out).toMatch(/<input[^>]*type="radio"[^>]*checked=""[^>]*value="session"/)
-    expect(out).not.toMatch(/<input[^>]*type="radio"[^>]*checked=""[^>]*value="match"/)
+    expect(out).toMatch(/<input[^>]*type="radio"[^>]*checked=""[^>]*value="match"/)
+    expect(out).not.toMatch(/<input[^>]*type="radio"[^>]*checked=""[^>]*value="session"/)
     expect(out).toMatch(/<option value="1080" selected/)
     expect(out).toMatch(/<option value="60" selected/)
     expect(out).toMatch(/<option value="10000" selected/)

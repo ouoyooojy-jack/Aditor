@@ -5,8 +5,11 @@
   /* Game identity colors, used by the library game filter chips and card tags. */
   --lib-game-apex: #e5484d;
   --lib-game-valorant: #14b8a6;
+  --lib-game-cs2: #f5a524;
 }
 :root[data-theme='light'] {
   /* Darker teal keeps the VALORANT tag readable on light surfaces. */
   --lib-game-valorant: #0d9488;
+  /* Darker amber keeps the CS2 tag readable on light surfaces. */
+  --lib-game-cs2: #b45309;
 }

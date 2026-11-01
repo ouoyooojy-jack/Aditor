@@ -144,7 +144,8 @@ export const settingsI18n: Messages['settingsI18n'] = {
       preview: {
         heading: '폴더 구조',
         dayFolder: '날짜',
-        recordings: '녹화는 날짜별 폴더에 저장',
+        recordings: '임시 녹화는 날짜별 폴더에 저장되고 30일 후 자동 삭제',
+        saved: '"저장"한 녹화, 계속 보관',
         merged: '편집 결과: 병합',
         clips: '편집 결과: 클립별 저장'
       }
@@ -221,7 +222,7 @@ export const settingsI18n: Messages['settingsI18n'] = {
     },
     trademark: {
       title: '상표 고지',
-      desc: 'Apex Legends는 Electronic Arts / Respawn의 상표이며, 본 프로젝트와는 무관합니다.',
+      desc: 'Apex Legends는 Electronic Arts / Respawn, VALORANT는 Riot Games, Counter-Strike 2는 Valve Corporation의 상표이며, 모두 본 프로젝트와는 무관합니다.',
       keywords: ['상표', 'apex legends', 'ea', 'respawn', '고지']
     }
   }

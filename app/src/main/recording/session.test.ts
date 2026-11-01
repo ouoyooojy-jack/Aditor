@@ -126,6 +126,61 @@ describe('recording service state machine', () => {
     expect(distrust).toHaveBeenCalledOnce()
   })
 
+  it('records CS2 matches, rounds and kills from Game State Integration without a detection engine', async () => {
+    const value = rig()
+    const icons = path.join(value.root, 'icons')
+    fs.mkdirSync(icons)
+    fs.copyFileSync(path.join(value.root, 'profile.json'), path.join(icons, 'profile.json'))
+    fs.mkdirSync(path.join(value.root, 'cs2', 'icons'), { recursive: true })
+    fs.writeFileSync(path.join(value.root, 'cs2', 'icons', 'profile.json'),
+      JSON.stringify({ templates_version: 'cs2-gsi@1', capture_rois: { banner: [0, 0, 16, 16], spec: [0, 0, 16, 16] } }))
+    value.deps.profileDir = icons
+    // A live engine command that would fail loudly if CS2 tried to start it.
+    value.deps.liveEngineCommand = { command: path.join(value.root, 'no-such-engine.exe'), args: [] }
+    value.deps.findGame = vi.fn(async () => ({ game: 'cs2' as const, pid: 7300 }))
+    const client = Object.assign(new EventEmitter(), { probe: async () => true, start: vi.fn(), stop: vi.fn() })
+    value.deps.createCs2Client = () => client as never
+    value.settings.mode = 'match'
+    value.service.start()
+    await waitFor(() => value.service.status().phase === 'recording')
+    const dir = commands(value, 'start')[0].session_dir as string
+    expect(JSON.parse(fs.readFileSync(path.join(dir, 'recording.json'), 'utf8'))).toMatchObject({ mode: 'match', game: 'cs2' })
+    expect(client.start).toHaveBeenCalledOnce()
+    const now = Date.now()
+    client.emit('event', { type: 'match_start', at: now, map: 'de_inferno', mode: 'competitive' })
+    client.emit('event', { type: 'kill', at: now + 1000, headshot: true })
+    client.emit('event', { type: 'kill', at: now + 2000, headshot: false })
+    client.emit('event', { type: 'death', at: now + 2500 })
+    client.emit('event', { type: 'round_end', at: now + 3000, winner: 'ally', ally: 1, enemy: 0 })
+    await waitFor(() => value.service.status().kills === 2)
+    const live = (): Record<string, any> => JSON.parse(fs.readFileSync(path.join(dir, 'live.json'), 'utf8'))
+    await waitFor(() => fs.existsSync(path.join(dir, 'live.json')) && live().rounds?.length === 1 && live().events.length === 3)
+    expect(live()).toMatchObject({ engine_version: 'cs2-gsi@1', quality: { complete: true } })
+    expect(live().events.map((e: { type: string }) => e.type)).toEqual(['kill', 'kill', 'death'])
+    expect(live().events[0]).toMatchObject({ headshot: true, counted: true })
+    expect(live().rounds[0]).toMatchObject({ winner: 'ally', ally: 1, enemy: 0 })
+    expect(vi.mocked(value.deps.notify).mock.calls.some(([, message]) => message.includes('即時偵測引擎'))).toBe(false)
+    expect(vi.mocked(value.deps.notify).mock.calls.some(([kind]) => kind === 'matchStart')).toBe(true)
+  })
+
+  it('keeps a CS2 session whole when Game State Integration is not configured', async () => {
+    const value = rig()
+    const icons = path.join(value.root, 'icons')
+    fs.mkdirSync(icons)
+    fs.copyFileSync(path.join(value.root, 'profile.json'), path.join(icons, 'profile.json'))
+    fs.mkdirSync(path.join(value.root, 'cs2', 'icons'), { recursive: true })
+    fs.writeFileSync(path.join(value.root, 'cs2', 'icons', 'profile.json'),
+      JSON.stringify({ templates_version: 'cs2-gsi@1', capture_rois: { banner: [0, 0, 16, 16], spec: [0, 0, 16, 16] } }))
+    value.deps.profileDir = icons
+    value.deps.findGame = vi.fn(async () => ({ game: 'cs2' as const, pid: 7300 }))
+    value.settings.mode = 'match'
+    value.service.start()
+    await waitFor(() => commands(value, 'start').length === 1)
+    const dir = commands(value, 'start')[0].session_dir as string
+    await waitFor(() => fs.existsSync(path.join(dir, 'recording.json')))
+    expect(JSON.parse(fs.readFileSync(path.join(dir, 'recording.json'), 'utf8'))).toMatchObject({ mode: 'session', game: 'cs2' })
+  })
+
   it('keeps recording when the storage probe fails', async () => {
     const value = rig()
     value.deps.probeStorage = vi.fn(async () => { throw new Error('probe failed') })

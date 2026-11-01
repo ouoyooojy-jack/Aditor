@@ -14,7 +14,7 @@ export const i18n: Messages['i18n'] = {
   },
   /** Main-process native dialogs (titles and file type filters) */
   dialog: {
-    selectFilesTitle: '选择 Apex Legends 录像文件',
+    selectFilesTitle: '选择游戏录像文件',
     videoFilter: '视频文件',
     selectFolderTitle: '选择包含录像的文件夹',
     addWatchFolderTitle: '选择要监控的文件夹（新视频自动导入）',
@@ -43,7 +43,7 @@ export const i18n: Messages['i18n'] = {
     },
     videoCount: '{n} 个视频',
     empty: {
-      title: '把 Apex 录像拖进来',
+      title: '把游戏录像拖进来',
       desc: '支持 mp4 / mkv / mov / webm。新视频会自动排入分析，一次分析一个。',
       step1Title: '导入',
       step1Desc: '拖放文件，或指定监控文件夹',
@@ -97,6 +97,13 @@ export const i18n: Messages['i18n'] = {
       av1: 'AV1 · 建议代理文件',
       proxySuggest: '建议代理文件',
       importedTag: '外部导入',
+      savedTag: '已保存',
+      expiresIn: '{n} 天后删除',
+      expiresToday: '即将删除',
+      expiryHint: '临时录像会在 30 天后自动删除；点“保存”移到保存文件夹即可永久保留',
+      saveAction: '保存（永久保留）',
+      saveDone: '已移到保存文件夹，不会自动删除',
+      saveFailed: '保存失败',
       removeSourceConfirm: '确定要从视频库移除“{name}”并删除源视频文件吗？此操作无法撤销。',
       removeChoiceTitle: '移除外部导入视频',
       removeChoiceMessage: '“{name}”是外部导入的视频。要删除源视频文件，还是只从视频库移除？删除源文件无法恢复。',

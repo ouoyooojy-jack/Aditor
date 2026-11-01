@@ -8,6 +8,16 @@
 >
 > 錄下你的 *Apex Legends* 或 *VALORANT* 對局，或直接拖入手上已有的遊戲影片。Aditor 會自動標出 Apex 的每一次擊倒與助攻，或 VALORANT 的每一次擊殺與死亡，讓你在時間軸上挑選精彩片段並匯出。影片處理全部在你的電腦上完成，只看畫面像素，不注入遊戲。過濾後的 Sentry 錯誤與效能診斷預設啟用，可在設定關閉；詳見[診斷說明](docs/sentry.md)。
 
+## 本分支的修改
+
+這是 Aditor 的修改版，與上游的差異：
+
+- **支援 Counter-Strike 2**：透過 Valve 官方的 Game State Integration（GSI）取得分局、回合勝負、擊殺與死亡，不分析畫面、不注入遊戲，所以幾乎不增加效能負擔。Aditor 啟動時會自動在 CS2 的 `game/csgo/cfg` 放入 `gamestate_integration_aditor.cfg`（只傳到本機 `127.0.0.1:3123`，並附隨機 token）；CS2 只在啟動時讀取設定，第一次安裝後請重新啟動 CS2。CS2 影片的事件只來自錄影當下，無法重新分析。
+- **預設一局一個檔**：VALORANT（Riot Client API）與 CS2（GSI）都按對局切檔，加時賽（例如 15:13）仍屬於同一局；熱身不錄進對局檔。
+- **暫存與保存資料夾**：錄影先放在 `<儲存位置>/Recordings`（暫存），30 天後自動刪除；在影片卡上按「保存」會把影片連同分析結果移到 `<儲存位置>/Saved`，永久保留。收藏的影片、被專案使用中的影片，以及安裝本版本以前的舊錄影都不會被自動刪除。
+- **不自動錄 Apex Legends**：仍可匯入並分析 Apex 影片，但偵測到 Apex 啟動時不會自動錄影。
+- 預設錄影為 1080p / 60fps、HEVC、最快的編碼預設（可在設定改成 720p）。
+
 **下載：** [Releases](https://github.com/ShiQu1218/Aditor/releases)（Windows 10 / 11 64 位元；安裝版或免安裝版）
 
 ---

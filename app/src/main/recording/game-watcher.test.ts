@@ -7,7 +7,9 @@ describe('Game process detection', () => {
   it('accepts only exact game filenames and valid PIDs, returning the first matching process', () => {
     expect(parseGameProcess('INFO: 沒有符合的工作')).toBeNull()
     expect(parseGameProcess('"r5apex_launcher.exe","55","Console"\n"r5apex.exe","0","Console"')).toBeNull()
-    expect(parseGameProcess('"R5APEX_DX12.EXE","123","Console","1","10,000 K"\r\n"r5apex.exe","456"')).toEqual({ game: 'apex', pid: 123 })
+    // Apex footage can still be analyzed, but this build does not record Apex automatically.
+    expect(parseGameProcess('"R5APEX_DX12.EXE","123","Console","1","10,000 K"\r\n"r5apex.exe","456"')).toBeNull()
+    expect(parseGameProcess('"cs2launcher.exe","30","Console"\n"cs2.exe","31","Console"')).toEqual({ game: 'cs2', pid: 31 })
     expect(parseGameProcess('"VALORANT.exe","70","Console"\n"VALORANT-Win64-Shipping.exe","71","Console"'))
       .toEqual({ game: 'valorant', pid: 71 })
     expect(parseGameProcess('"svchost.exe","4","Services"\n"VALORANT-Win64-Shipping.exe","8","Console"\n"r5apex.exe","9","Console"'))

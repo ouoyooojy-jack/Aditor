@@ -10,7 +10,8 @@ export const CHIP_TYPES: EventType[] = ['knock', 'kill', 'assist_knock', 'assist
 export const VALORANT_CHIP_TYPES: EventType[] = ['kill', 'death']
 
 export function chipTypesFor(game: GameId | undefined): EventType[] {
-  return game === 'valorant' ? VALORANT_CHIP_TYPES : CHIP_TYPES
+  // CS2 Game State Integration reports kills and deaths, like Valorant.
+  return game === 'valorant' || game === 'cs2' ? VALORANT_CHIP_TYPES : CHIP_TYPES
 }
 
 /** Count of undeleted events of each type (shown on chips). */

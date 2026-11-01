@@ -7,7 +7,8 @@ import {
   EXPORTS_DIRNAME,
   EXPORT_CLIPS_DIRNAME,
   EXPORT_MERGED_DIRNAME,
-  RECORDINGS_DIRNAME
+  RECORDINGS_DIRNAME,
+  SAVED_DIRNAME
 } from '../shared/storage'
 import { isSafeLocalDirPath } from './safe-path'
 
@@ -32,6 +33,7 @@ export function prepareStorageRoot(input: unknown, fsApi: typeof fs = fs): Prepa
     for (const dir of [
       root,
       recordingsDir,
+      path.join(root, SAVED_DIRNAME),
       exportsDir,
       path.join(exportsDir, EXPORT_MERGED_DIRNAME),
       path.join(exportsDir, EXPORT_CLIPS_DIRNAME)

@@ -277,6 +277,16 @@ export function LibraryScreen({ onSelectVideo, onOpenSettings }: LibraryScreenPr
     void window.api?.library?.setGame?.(path, game).catch((error: unknown) => toast({ message: String(error) }))
   }, [toast])
 
+  const handleSave = useCallback(async (path: string) => {
+    try {
+      const res: { ok: boolean; reason?: string; error?: string } | undefined = await window.api?.library?.save?.(path)
+      if (!res) return
+      toast({ message: res.ok ? t.card.saveDone : res.error ? `${t.card.saveFailed} (${res.error})` : t.card.saveFailed })
+    } catch (error) {
+      toast({ message: `${t.card.saveFailed} (${String(error)})` })
+    }
+  }, [toast])
+
   const handleSplitMatches = useCallback(
     async (path: string) => {
       toast({ message: t.card.splitStarted })
@@ -345,6 +355,7 @@ export function LibraryScreen({ onSelectVideo, onOpenSettings }: LibraryScreenPr
         onRetry={handleRetry}
         onSetGame={handleSetGame}
         onSplitMatches={handleSplitMatches}
+        onSave={handleSave}
         onMenuChange={handleMenuChange}
         proxySuggest={proxySuggest}
         active={active}
@@ -359,6 +370,7 @@ export function LibraryScreen({ onSelectVideo, onOpenSettings }: LibraryScreenPr
       handleRemove,
       handleRetry,
       handleSplitMatches,
+      handleSave,
       handleSetGame,
       handleMenuChange,
       proxySuggest,

@@ -17,6 +17,8 @@ import { aditorrecCommand, appDataDir, cacheDir, chromiumUserDataDir, engineComm
 import { cacheFilePath } from './cache-io'
 import { generateThumbnail, cancelAllThumbnails } from './thumbnail'
 import { createRecordingService } from './recording'
+import { RecordingRetention } from './retention'
+import { installGsiConfig, loadOrCreateGsiConfig, type Cs2GsiConfig } from './recording/cs2-gsi'
 import { registerRecordingIpc } from './recording-ipc'
 import { createRecordingTray } from './tray'
 import { resolveLocale, setActiveLocale, tr, type Locale } from '../shared/locale'
@@ -42,6 +44,7 @@ let watchManager: WatchManager | null = null
 let closeGate: ReturnType<typeof createCloseGate> | null = null
 let cancelExport: (() => Promise<void>) | null = null
 let recordingService: RecordingService | null = null
+let retention: RecordingRetention | null = null
 let tray: ReturnType<typeof createRecordingTray> | null = null
 let unregisterRecordingIpc: (() => void) | null = null
 let unsubscribeSettings: (() => void) | null = null
@@ -196,6 +199,23 @@ async function initEngineAndServices(): Promise<void> {
   // Project autosave: `%APPDATA%\Aditor\projects\<id>.json`.
   const projectStore = new ProjectStore(join(appDataDir(), 'projects'))
 
+  const recordingsDir = (): string => settingsStore!.get().recording.outputDir ?? settingsStore!.get().watchFolders[0] ?? join(app.getPath('videos'), 'Aditor')
+  retention = new RecordingRetention({
+    library,
+    withStoppedAnalysis: (paths, action) => queue!.withStoppedAnalysis(paths, action),
+    projects: projectStore,
+    recordingsDir,
+    cacheDir,
+    changed: () => {
+      const payload = queue!.payload()
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed() && !win.webContents.isDestroyed()) win.webContents.send('library:updated', payload)
+      }
+    }
+  })
+  ipcMain.handle('library:save', (_, videoPath: unknown) => typeof videoPath === 'string' ? retention!.save(videoPath) : { ok: false, reason: 'not_found' })
+  if (!e2e) retention.start()
+
   const handlers = registerIpcHandlers(library, queue, () => (mainWindow ? [mainWindow] : []), engineClient, settingsStore, watchManager, projectStore, (ok) => closeGate?.ack(ok))
   cancelExport = handlers.cancelExport
 
@@ -210,7 +230,15 @@ async function initEngineAndServices(): Promise<void> {
       }
     }
   }
+  // CS2 reads its Game State Integration cfg at launch, so install it before the game starts; a failure only disables CS2 events.
+  let cs2Gsi: Cs2GsiConfig | undefined
+  try {
+    const gsi = loadOrCreateGsiConfig(appDataDir())
+    cs2Gsi = gsi
+    if (!e2e) void installGsiConfig(gsi).catch((error) => console.error('Failed to install the CS2 Game State Integration cfg:', error))
+  } catch (error) { console.error('Failed to prepare CS2 Game State Integration:', error) }
   recordingService = createRecordingService({
+    cs2Gsi,
     onDiagnostic: reportChildDiagnostic,
     log: createDiagnosticLog(join(appDataDir(), 'recording.log')),
     getSettings: () => settingsStore!.get().recording,
@@ -327,6 +355,7 @@ const quitGuard = createAppQuitGuard({
   onQuitBlocked: () => {
     quitting = false
     watchManager?.start()
+    if (!e2e) retention?.start()
     if (!e2e) recordingService?.start()
     showMainWindow()
     dialog.showErrorBox('Aditor', tr('無法儲存媒體庫，變更尚未寫入磁碟。請確認磁碟空間與檔案權限後重試。'))
@@ -335,7 +364,7 @@ const quitGuard = createAppQuitGuard({
   cancelExport: () => cancelExport?.(),
   cancelProxies: async () => (await import('./proxy')).cancelAllProxies(),
   cancelThumbnails: () => cancelAllThumbnails(),
-  stopWatcher: () => watchManager?.stop(),
+  stopWatcher: () => { retention?.stop(); return watchManager?.stop() },
   installUpdate: () => appUpdater?.installIfRequested() ?? false,
   quit: () => app.quit(),
   timeoutMs: 5000

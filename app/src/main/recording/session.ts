@@ -9,6 +9,7 @@ import {
 import { isSafeLocalDirPath } from '../safe-path'
 import { GameWatcher, findGameProcess, sameProcess, type GameProcess } from './game-watcher'
 import { ValorantClient, type PresenceEvent } from './valorant-client'
+import { CS2_GSI_PORT, Cs2Client, type Cs2Event } from './cs2-gsi'
 import { DEFAULT_GAME, GAMES, gameProfileDir, gameSceneDir, type GameId } from '../../shared/games'
 import { AditorrecClient, RecorderError, type RecorderEvent } from './aditorrec-client'
 import { diskFreeBytes, diskLevel } from './disk'
@@ -78,9 +79,12 @@ interface ActiveSession {
   obsWork: Promise<void>
   /** aditorrec has reported started (capture has actually begun). */
   captured: boolean
-  /** Valorant: match boundaries from the Riot Client's local API. */
-  gameClient?: ValorantClient
+  /** Valorant: match boundaries from the Riot Client's local API; CS2: matches, rounds and kills from Game State Integration. */
+  gameClient?: ValorantClient | Cs2Client
 }
+
+/** CS2 events need no detection engine; this is the engine version its live caches carry. */
+export const CS2_CLIENT_SOURCE = 'cs2-gsi@1'
 
 /** After stopping our OBS recording, treat active status during this interval as still stopping. */
 const OBS_STOP_GRACE_MS = 30_000
@@ -196,6 +200,15 @@ export class RecordingSessionService implements RecordingService {
         if (!this.pollWarning) this.notice('error', tr('無法偵測遊戲程序：{error}', { error: String(error) }))
         this.pollWarning = true
       }, sameProcess)
+  }
+
+  private createGameClient(game: GameId): ValorantClient | Cs2Client | undefined {
+    if (game === 'valorant') return (this.deps.createValorantClient ?? (() => new ValorantClient()))()
+    if (game !== 'cs2') return undefined
+    if (this.deps.createCs2Client) return this.deps.createCs2Client()
+    const config = this.deps.cs2Gsi
+    if (!config) return undefined
+    return new Cs2Client({ config: { port: config.port ?? CS2_GSI_PORT, token: config.token } })
   }
 
   private get findGame(): () => Promise<GameProcess | null> {
@@ -353,6 +366,7 @@ export class RecordingSessionService implements RecordingService {
       sessionId: id, dir, command: this.deps.liveEngineCommand, profileDir: gameProfileDir(this.deps.profileDir, game),
       sceneDir: game === DEFAULT_GAME ? this.deps.sceneDir : gameSceneDir(this.deps.profileDir, game), aspect, game,
       restartBaseMs: this.deps.liveRestartBaseMs,
+      ...(game === 'cs2' ? { clientSource: CS2_CLIENT_SOURCE } : {}),
       onDiagnostic: this.deps.onDiagnostic,
       recordEvent: (event) => { if (this.active?.live === live) this.recordEvent(this.active, event) },
       notice: (message) => this.notice('error', message)
@@ -461,8 +475,8 @@ export class RecordingSessionService implements RecordingService {
     const capture = settings.backend === 'obs' || (settings.captureMethod === 'hook' && (this.hookFallbackPid === pid || !this.deps.obsHookDir))
       ? 'dda' : resolveCaptureMethod(settings.captureMethod, this.deps.borderlessCapture)
     const game = this.game
-    // Valorant's match boundaries come from the Riot Client; Apex detection finds its own.
-    const gameClient = game === 'valorant' ? (this.deps.createValorantClient ?? (() => new ValorantClient()))() : undefined
+    // Valorant's match boundaries come from the Riot Client, CS2's from Game State Integration; Apex detection finds its own.
+    const gameClient = this.createGameClient(game)
     const clientReachable = gameClient ? await gameClient.probe() : false
     if (game !== DEFAULT_GAME && settings.mode === 'match' && !clientReachable) {
       // Per-match cutting needs match events. Without them a healthy session with no match would be pruned and
@@ -506,11 +520,16 @@ export class RecordingSessionService implements RecordingService {
         mode: settings.mode, cuts: Promise.resolve(), cutPending: false, cutting: false, failedCuts: new Set(), backend: settings.backend, obs: null, obsWork: Promise.resolve(), captured: false,
         ...(clientReachable && gameClient ? { gameClient } : {}) }
       if (clientReachable && gameClient) {
-        gameClient.on('event', (ev: PresenceEvent) => {
-          if ((ev.type === 'match_start' || ev.type === 'match_end') && this.active === session && !session!.ending) session!.live.clientMatch(ev.type, ev.at)
+        gameClient.on('event', (ev: PresenceEvent | Cs2Event) => {
+          if (this.active !== session || session!.ending) return
+          if (ev.type === 'match_start' || ev.type === 'match_end') session!.live.clientMatch(ev.type, ev.at)
+          // Valorant rounds and kills come from the detection engine; only CS2 reports them through its client.
+          else if (game === 'cs2' && (ev.type === 'kill' || ev.type === 'death')) session!.live.clientEvent(ev.type, ev.at, ev.type === 'kill' ? { headshot: ev.headshot } : {})
+          else if (game === 'cs2' && ev.type === 'round_end') session!.live.clientRound(ev.winner, ev.ally, ev.enemy, ev.at)
         })
         gameClient.on('unavailable', (error: Error) => {
-          this.log(`riot client unavailable: ${error.message}`)
+          this.log(`${game} client unavailable: ${error.message}`)
+          if (game === 'cs2') this.notice('warning', tr('CS2 沒有傳送遊戲狀態，本次整段保留不分局。若剛安裝 Aditor，請重新啟動 CS2 以啟用逐局分割與擊殺紀錄'))
           // A match_start may be missed while the client is down; keep the footage instead of pruning it as lobby time.
           if (this.active === session && !session!.ending) session!.live.distrust()
         })

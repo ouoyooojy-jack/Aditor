@@ -45,7 +45,7 @@ export const shellI18n: Messages['shellI18n'] = {
       title: 'Recording settings',
       body: 'You can change these later in the Recording tab of Settings.',
       modeLabel: 'Recording mode',
-      modeSessionDesc: 'Records from when Apex opens until you close it, saved as one complete video.',
+      modeSessionDesc: 'Records from when the game opens until you close it, saved as one complete video.',
       modeMatchDesc: 'Saves each match as its own video. The lobby keeps only the last 15 seconds or so in a buffer, so it takes no disk space.',
       resolution: 'Resolution',
       fps: 'Frame rate',
@@ -57,7 +57,7 @@ export const shellI18n: Messages['shellI18n'] = {
       summaryMode: 'Recording mode: {mode}',
       summaryQuality: 'Quality: {height}, {fps} fps, {bitrate} kbps',
       nextHeading: 'What happens next',
-      next1: 'Recording starts automatically when you open Apex Legends.',
+      next1: 'Recording starts automatically when you open VALORANT or Counter-Strike 2.',
       next2: 'After a recording ends, it is analyzed automatically to find highlights.',
       next3: 'Go to Studio to pick clips and export them.'
     }

@@ -4,7 +4,7 @@ import { tr } from '../shared/locale'
 import { Library, normalizePath } from './library'
 import { CacheDoc, countEvents } from '../shared/types'
 import { cacheFilePath, loadCacheDoc } from './cache-io'
-import { gameOf } from '../shared/games'
+import { GAMES, gameOf, isGameId } from '../shared/games'
 import type { QueuePayload, QueueSnapshot } from '../shared/queueState'
 import { analyzeSettingArgs, AnalyzeSettings } from './settings-derived'
 import { capturePriorCache, preserveClipsAfterReanalysis } from './reanalysis'
@@ -102,6 +102,9 @@ export class AnalysisQueue extends EventEmitter {
     // A path that is already running cannot be queued again, so keeping its force token would affect a later plain enqueue.
     const running = this.current && !this.current.cancelled && normalizePath(this.current.path) === norm
     if (running) return
+    // CS2 events exist only from the recording's Game State Integration; the engine cannot analyze its footage.
+    const game = this.library.get(videoPath)?.game
+    if (isGameId(game) && !GAMES[game].analyzable) return
     // Upgrade an already queued plain run to forced, but only add a token when the item is actually queued.
     if (force) this.forced.add(norm)
     if (!this.queue.some((p) => normalizePath(p) === norm)) {

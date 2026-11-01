@@ -49,6 +49,7 @@
 .lib-game-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--text-3); }
 .lib-game-dot.apex { background: var(--lib-game-apex); }
 .lib-game-dot.valorant { background: var(--lib-game-valorant); }
+.lib-game-dot.cs2 { background: var(--lib-game-cs2); }
 .lib-pill {
   display: inline-flex;
   align-items: center;
@@ -322,6 +323,28 @@
 .vcard:focus-within .vcard-fav,
 .vcard-fav.on { opacity: 1; }
 .vcard-fav:focus-visible { box-shadow: var(--focus-ring); }
+/* Save (keep) button for temporary recordings: sits left of the favorite star and shows on hover like it. */
+.vcard-keep {
+  position: absolute;
+  top: 6px;
+  right: 42px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--bg-scrim);
+  color: var(--text-1);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur-fast), color var(--dur-fast);
+}
+.vcard:hover .vcard-keep,
+.vcard:focus-within .vcard-keep { opacity: 1; }
+.vcard-keep:hover { color: var(--accent); }
+.vcard-keep:focus-visible { box-shadow: var(--focus-ring); }
 .vcard-fav.on { color: var(--favorite); }
 
 .vcard-counts { position: absolute; left: 8px; bottom: 8px; display: flex; gap: 4px; z-index: 3; }
@@ -379,8 +402,21 @@
 }
 .vcard-game.apex { color: var(--lib-game-apex); background: color-mix(in srgb, var(--lib-game-apex) 18%, transparent); }
 .vcard-game.valorant { color: var(--lib-game-valorant); background: color-mix(in srgb, var(--lib-game-valorant) 18%, transparent); }
+.vcard-game.cs2 { color: var(--lib-game-cs2); background: color-mix(in srgb, var(--lib-game-cs2) 18%, transparent); }
 /* Imported tag: neutral, so it is not mistaken for a game tag. */
 .vcard-imported { color: var(--text-2); background: var(--bg-active); }
+.vcard-saved,
+.vcard-expiry {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-caption);
+}
+.vcard-saved { color: var(--success); background: color-mix(in srgb, var(--success) 16%, transparent); }
+.vcard-expiry { color: var(--text-2); background: var(--bg-active); }
+.vcard-expiry.soon { color: var(--warning); background: color-mix(in srgb, var(--warning) 16%, transparent); }
 .vcard-codec { text-transform: uppercase; }
 
 .vcard-error-reason { color: var(--danger); font-size: var(--fs-small); line-height: 18px; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; }
