@@ -193,7 +193,7 @@ Each invocation prints its result path and creates:
 
 ```text
 <timestamp-id>/
-  r5apex.exe
+  cs2.exe                  # the fake game; this build does not record Apex automatically
   001-baseline/
     frames.csv
     stats.json

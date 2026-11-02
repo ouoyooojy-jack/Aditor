@@ -59,10 +59,10 @@ function Check-Exit([string]$Label) {
 }
 function Assert-NoAditor {
     $busy = @(Get-Process | Where-Object {
-        $_.ProcessName -match '^(Aditor|aditorrec|r5apex|r5apex_dx12|fakegame|VALORANT-Win64-Shipping)$' -or
+        $_.ProcessName -match '^(Aditor|aditorrec|r5apex|r5apex_dx12|cs2|fakegame|VALORANT-Win64-Shipping)$' -or
         ($_.ProcessName -eq 'electron' -and $_.Path -like "$appDir\*")
     })
-    if ($busy.Count) { throw "Close existing Aditor/Apex/recorder processes first; the harness never stops unrelated processes. PIDs: $($busy.Id -join ', ')" }
+    if ($busy.Count) { throw "Close existing Aditor/Apex/CS2/recorder processes first; the harness never stops unrelated processes. PIDs: $($busy.Id -join ', ')" }
 }
 $Source = (Resolve-Path -LiteralPath $Source).Path
 $Ffmpeg = (Resolve-Path -LiteralPath $Ffmpeg).Path
@@ -118,7 +118,9 @@ try {
     }
     $invocation = Join-Path ([IO.Path]::GetFullPath($ResultsDir)) ("{0}-{1}" -f (Get-Date -Format 'yyyyMMdd-HHmmss'), ([guid]::NewGuid().ToString('N').Substring(0, 8)))
     [IO.Directory]::CreateDirectory($invocation) | Out-Null
-    $gameExe = Join-Path $invocation 'r5apex.exe'
+    # This build records VALORANT and CS2 automatically but not Apex, so the fake game runs as cs2.exe. CS2 has no
+    # detection engine (its events come from Game State Integration), so rec_live measures no engine cost here.
+    $gameExe = Join-Path $invocation 'cs2.exe'
     Copy-Item -LiteralPath (Join-Path $crate 'target/release/fakegame.exe') -Destination $gameExe
     $revision = & git -C $repo rev-parse HEAD
     $runIndex = 0
