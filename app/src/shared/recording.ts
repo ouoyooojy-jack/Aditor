@@ -121,7 +121,8 @@ export const DEFAULT_RECORDING_SETTINGS: RecordingSettings = {
   diskWarnGb: 10,
   diskStopGb: 2,
   notifyMatch: false,
-  captureCursor: true,
+  // Off by default: FPS games hide the cursor anyway, and with screen capture (DDA) drawing it costs about 1% FPS.
+  captureCursor: false,
   captureMethod: 'auto',
   openOnGameExit: true
 }

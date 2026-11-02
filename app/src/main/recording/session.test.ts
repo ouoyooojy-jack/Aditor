@@ -206,7 +206,7 @@ describe('recording service state machine', () => {
     expect(start.audio).toEqual({ render: 'speaker', capture: 'mic', mic_enabled: false, mic_gain: 0.4,
       render_enabled: true, render_gain: 1, render_source: 'device', exclude_pid: process.pid, mic_mono: false })
     expect(start.capture).toBe('dda')
-    expect(start.capture_cursor).toBe(true)
+    expect(start.capture_cursor).toBe(false)
     await waitFor(() => fs.existsSync(path.join(start.session_dir, 'events.jsonl')) &&
       fs.readFileSync(path.join(start.session_dir, 'events.jsonl'), 'utf8').includes('window_lost'))
     expect(fs.readFileSync(path.join(start.session_dir, 'events.jsonl'), 'utf8')).toContain('window_lost')

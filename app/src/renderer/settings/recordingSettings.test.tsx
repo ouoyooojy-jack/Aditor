@@ -68,13 +68,13 @@ async function slider(field: string, value: string): Promise<void> {
 }
 
 describe('Recording settings screen and controller', () => {
-  test('cursor recording defaults on and can be disabled in saved settings', async () => {
+  test('cursor recording defaults off and can be enabled in saved settings', async () => {
     const r = await show()
-    expect(control<HTMLInputElement>('captureCursor').checked).toBe(true)
+    expect(control<HTMLInputElement>('captureCursor').checked).toBe(false)
     click(control('captureCursor'))
     await flush()
-    expect(r.controller.getState().settings?.recording.captureCursor).toBe(false)
-    expect(r.set).toHaveBeenLastCalledWith(expect.objectContaining({ recording: expect.objectContaining({ captureCursor: false }) }))
+    expect(r.controller.getState().settings?.recording.captureCursor).toBe(true)
+    expect(r.set).toHaveBeenLastCalledWith(expect.objectContaining({ recording: expect.objectContaining({ captureCursor: true }) }))
   })
   test('Selecting OBS shows connection settings, hides video/audio settings, preserves values on remount, and shows the test result', async () => {
     const r = await show()
@@ -386,6 +386,11 @@ describe('Recording settings screen and controller', () => {
     const details = control('captureMethod').closest('details')!
     details.open = true
     expect(control<HTMLSelectElement>('captureMethod').value).toBe('auto')
+    // Turn cursor recording on so the checks below show hook mode keeping the saved value.
+    click(control('captureCursor'))
+    await flush()
+    expect(control<HTMLInputElement>('captureCursor').checked).toBe(true)
+    r.set.mockClear()
 
     vi.useFakeTimers()
     select('captureMethod', 'hook')
