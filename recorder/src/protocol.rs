@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::{AudioConfig, CaptureMethod, EncodeConfig, FramesSpec};
+use crate::types::{AudioConfig, CaptureMethod, EncodeConfig, FramesSpec, VcamSpec};
 
 /// Maximum line length (exceeding it produces bad_request).
 pub const MAX_LINE_BYTES: usize = 64 * 1024;
@@ -41,6 +41,9 @@ pub struct StartArgs {
     pub hook_dir: Option<String>,
     #[serde(default = "cursor_enabled")]
     pub capture_cursor: bool,
+    /// Also feed captured frames to the OBS Virtual Camera; absent = off. Failure to open it is a warning, not an error.
+    #[serde(default)]
+    pub vcam: Option<VcamSpec>,
 }
 
 fn cursor_enabled() -> bool {
@@ -248,6 +251,22 @@ mod tests {
             panic!()
         };
         assert!(!args.capture_cursor);
+        assert_eq!(args.vcam, None);
+        let vcam = obs.replace(
+            "\"encode\":null",
+            "\"vcam\":{\"width\":1280,\"height\":720,\"fps\":30},\"encode\":null",
+        );
+        let Command::Start(args) = parse_request(&vcam).unwrap().cmd else {
+            panic!()
+        };
+        assert_eq!(
+            args.vcam,
+            Some(crate::types::VcamSpec {
+                width: 1280,
+                height: 720,
+                fps: 30
+            })
+        );
     }
 
     #[test]

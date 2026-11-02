@@ -16,6 +16,10 @@ export type PostRecordAnalysis = 'none' | 'afterExit' | 'perMatch'
 
 export type RecordingCodec = 'hevc' | 'h264' | 'av1'
 
+/** Virtual camera output (through the OBS Virtual Camera driver): off or a size and frame rate. */
+export type VirtualCamMode = 'off' | '720p30' | '720p60' | '1080p30'
+export const VIRTUAL_CAM_MODES: readonly VirtualCamMode[] = ['off', '720p30', '720p60', '1080p30']
+
 /** `settings.recording` (value ranges are in `RECORDING_RANGES` and validated by main). */
 export interface RecordingSettings {
   /** Automatically record when Apex is detected. */
@@ -76,6 +80,8 @@ export interface RecordingSettings {
   captureMethod: RecordingCaptureMethod
   /** Show the Aditor window automatically when Apex exits. */
   openOnGameExit: boolean
+  /** Also send the captured game to the OBS Virtual Camera device, for example to show it as a camera in Discord on the web. */
+  virtualCam: VirtualCamMode
 }
 
 export type RecordingCaptureMethod = 'auto' | 'wgc' | 'dda' | 'hook'
@@ -124,7 +130,8 @@ export const DEFAULT_RECORDING_SETTINGS: RecordingSettings = {
   // Off by default: FPS games hide the cursor anyway, and with screen capture (DDA) drawing it costs about 1% FPS.
   captureCursor: false,
   captureMethod: 'auto',
-  openOnGameExit: true
+  openOnGameExit: true,
+  virtualCam: 'off'
 }
 
 /** Recording service status (pushed from main to renderer on `recording:status`, also available via `recording:getStatus`). */

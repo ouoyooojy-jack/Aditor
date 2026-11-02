@@ -37,6 +37,10 @@ export interface RecordingDeps {
   createValorantClient?: () => ValorantClient
   /** CS2 Game State Integration endpoint written into CS2's cfg folder; without it CS2 records whole sessions without events. */
   cs2Gsi?: Cs2GsiConfig
+  /** Test injection: whether the OBS Virtual Camera driver is installed (defaults to a registry query). */
+  vcamInstalled?: () => Promise<boolean>
+  /** Test injection: write the virtual camera format file the driver reads (defaults to %APPDATA%\obs-virtualcam.txt). */
+  writeVcamFormat?: (spec: import('./virtual-camera').VcamSpec) => Promise<void>
   /** Test injection: the CS2 Game State Integration receiver. */
   createCs2Client?: () => Cs2Client
   /** Diagnostic log, flushed line by line so recorder activity remains visible after a system crash. */

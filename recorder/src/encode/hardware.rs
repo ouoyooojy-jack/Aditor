@@ -187,6 +187,29 @@ impl Hardware {
     }
 }
 
+/// GPU BGRA → NV12 (BT.709 limited range) scaler for consumers outside the encoder, such as the virtual camera.
+/// The aspect ratio is kept, with black bars when the source is not 16:9.
+pub(crate) struct Nv12Scaler(Processor);
+
+impl Nv12Scaler {
+    pub(crate) fn new(gpu: &Gpu, source: (u32, u32), target: (u32, u32)) -> Result<Self> {
+        Processor::new(gpu, source, target, AV_PIX_FMT_NV12, EncodeAspect::Fit).map(Self)
+    }
+
+    pub(crate) fn source(&self) -> (u32, u32) {
+        self.0.source
+    }
+
+    /// `target` must be an NV12 render-target texture of the size given to `new`, on the same device.
+    pub(crate) fn convert(
+        &mut self,
+        source: &ID3D11Texture2D,
+        target: &ID3D11Texture2D,
+    ) -> Result<()> {
+        self.0.copy(source, target)
+    }
+}
+
 pub(super) struct Copier {
     gpu: Gpu,
     width: u32,

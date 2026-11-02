@@ -12,6 +12,7 @@ mod protocol;
 mod session;
 mod shm;
 mod types;
+mod vcam;
 
 unsafe extern "C" {
     fn av_log_set_level(level: i32);

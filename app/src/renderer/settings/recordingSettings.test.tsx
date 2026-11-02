@@ -140,7 +140,7 @@ describe('Recording settings screen and controller', () => {
     const fields = [
       'autoRecord', 'mode', 'postAnalysis',
       'backend',
-      'height', 'bitrateKbps', 'fps', 'captureCursor', 'forceAspect', 'aspectMode', 'codec', 'gpu', 'encoder', 'preset', 'captureMethod',
+      'height', 'bitrateKbps', 'fps', 'captureCursor', 'virtualCam', 'forceAspect', 'aspectMode', 'codec', 'gpu', 'encoder', 'preset', 'captureMethod',
       'systemAudioEnabled', 'renderDevice', 'systemGain', 'micEnabled', 'captureDevice', 'micGain', 'gameAudioOnly', 'micMono',
       'diskWarnGb', 'diskStopGb', 'notifyMatch', 'openOnGameExit'
     ]

@@ -18,6 +18,7 @@ use crate::{
     protocol::{ErrorCode, Event, GpuInfo, HelloInfo, StartArgs},
     shm::{self, ShmLayout, ShmWriter},
     types::{Codec, EncodeAspect, EncodeConfig, Rect, AUDIO_CHANNELS, SEGMENT_SECS, THUMB_H, THUMB_W},
+    vcam::VirtualCam,
 };
 use anyhow::{bail, ensure, Context, Result};
 use std::{
@@ -385,6 +386,8 @@ struct Counts {
 struct Consumer {
     pipeline: Arc<OnceLock<Option<Arc<SegmentWriter>>>>,
     extractor: SmallFrameExtractor,
+    /// OBS Virtual Camera feed; scaled and read back on its own schedule, so it never delays recording.
+    vcam: Option<VirtualCam>,
     small: SyncSender<SmallFrames>,
     first: Option<SyncSender<i64>>,
     origin: Option<i64>,
@@ -423,6 +426,9 @@ impl FrameConsumer for Consumer {
             if self.small.try_send(small).is_ok() {
                 self.counts.small_sent.fetch_add(1, Ordering::Relaxed);
             }
+        }
+        if let Some(vcam) = &mut self.vcam {
+            vcam.on_frame(frame.texture, frame.width, frame.height, pts);
         }
         if let Some(first) = self.first.take() {
             let _ = first.try_send(origin);
@@ -542,6 +548,23 @@ impl Session {
         };
         let extractor = SmallFrameExtractor::new(&gpu, args.frames)
             .map_err(|e| failure(ErrorCode::BadRequest, e))?;
+        // The virtual camera is optional: recording continues without it when OBS owns the queue or setup fails.
+        let vcam = args.vcam.and_then(|spec| match VirtualCam::new(&gpu, spec) {
+            Ok(vcam) => {
+                eprintln!(
+                    "Virtual camera: {}x{} at {} fps",
+                    spec.width, spec.height, spec.fps
+                );
+                Some(vcam)
+            }
+            Err(error) => {
+                events.emit(&Event::Warning {
+                    code: "vcam_unavailable".into(),
+                    message: format!("vcam_unavailable: {error:#}"),
+                });
+                None
+            }
+        });
         let name = shm::shm_name(&args.session_id);
         let shm = ShmWriter::create(
             &name,
@@ -570,6 +593,7 @@ impl Session {
         let consumer = Box::new(Consumer {
             pipeline: pipeline.clone(),
             extractor,
+            vcam,
             small: small_tx,
             first: Some(first_tx),
             origin: None,

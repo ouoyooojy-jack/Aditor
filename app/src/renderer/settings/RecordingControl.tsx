@@ -194,6 +194,10 @@ export function RecordingControl({ field, ids, state, settings, controller }: {
     case 'captureMethod':
       options = [{ value: 'auto', label: t.captureAuto }, { value: 'wgc', label: t.captureWgc }, { value: 'dda', label: t.captureDda }, { value: 'hook', label: t.captureHook }]
       break
+    case 'virtualCam':
+      options = [{ value: 'off', label: t.vcamOff }, { value: '720p30', label: '720p · 30 fps' },
+        { value: '720p60', label: '720p · 60 fps' }, { value: '1080p30', label: '1080p · 30 fps' }]
+      break
     case 'postAnalysis':
       options = [{ value: 'none', label: t.analysisNone }, { value: 'afterExit', label: t.analysisAfterExit }, { value: 'perMatch', label: t.analysisPerMatch }]
       break

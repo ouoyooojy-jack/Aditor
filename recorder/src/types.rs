@@ -34,6 +34,15 @@ impl Rect {
     }
 }
 
+/// Virtual camera output written to the OBS Virtual Camera shared-memory queue (NV12, BT.709 limited range).
+/// Dimensions must be even and at most 3840×2160; fps is 1..=60.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct VcamSpec {
+    pub width: u32,
+    pub height: u32,
+    pub fps: u32,
+}
+
 /// Small-image specification supplied by Python from the profile; aditorrec does not parse profiles.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FramesSpec {

@@ -4,12 +4,14 @@ import { randomBytes } from 'crypto'
 import { EventEmitter } from 'events'
 import {
   IDLE_RECORDING_STATUS,
+  type RecordingSettings,
   type LiveState, type LiveUpdate, type RecordingBackend, type RecordingMode, type RecordingService, type RecordingStatus, type RecorderCapabilities, type ObsTestResult
 } from '../../shared/recording'
 import { isSafeLocalDirPath } from '../safe-path'
 import { GameWatcher, findGameProcess, sameProcess, type GameProcess } from './game-watcher'
 import { ValorantClient, type PresenceEvent } from './valorant-client'
 import { CS2_GSI_PORT, Cs2Client, type Cs2Event } from './cs2-gsi'
+import { obsVirtualCamInstalled, vcamSpec, writeVcamFormat, type VcamSpec } from './virtual-camera'
 import { DEFAULT_GAME, GAMES, gameProfileDir, gameSceneDir, type GameId } from '../../shared/games'
 import { AditorrecClient, RecorderError, type RecorderEvent } from './aditorrec-client'
 import { diskFreeBytes, diskLevel } from './disk'
@@ -163,6 +165,8 @@ export class RecordingSessionService implements RecordingService {
   private skipReason: string | null = null
   /** Output folders already checked for cloud or network storage during this run. */
   private storageChecked = new Set<string>()
+  /** Whether this run already said the OBS Virtual Camera driver is missing. */
+  private vcamNoticed = false
 
   constructor(private deps: RecordingDeps) {
     this.watcher = new GameWatcher<GameProcess>(() => this.findGame(), deps.pollMs ?? 3000,
@@ -200,6 +204,26 @@ export class RecordingSessionService implements RecordingService {
         if (!this.pollWarning) this.notice('error', tr('無法偵測遊戲程序：{error}', { error: String(error) }))
         this.pollWarning = true
       }, sameProcess)
+  }
+
+  /** The virtual camera to feed, or null when it is off or its driver (installed with OBS Studio) is missing. */
+  private async virtualCamera(mode: RecordingSettings['virtualCam']): Promise<VcamSpec | null> {
+    const spec = vcamSpec(mode)
+    if (!spec) return null
+    let installed = false
+    try { installed = await (this.deps.vcamInstalled ?? obsVirtualCamInstalled)() }
+    catch (error) { this.log(`virtual camera check failed: ${String(error)}`) }
+    if (!installed) {
+      if (!this.vcamNoticed) {
+        this.vcamNoticed = true
+        this.notice('warning', tr('找不到 OBS 虛擬攝影機驅動，本次不輸出虛擬攝影機。請安裝 OBS Studio（只要安裝，不用開啟），再重新開始錄影'))
+      }
+      return null
+    }
+    // The driver offers this size before the stream starts; a stale size would only make it scale.
+    try { await (this.deps.writeVcamFormat ?? writeVcamFormat)(spec) }
+    catch (error) { this.log(`virtual camera format file failed: ${String(error)}`) }
+    return spec
   }
 
   private createGameClient(game: GameId): ValorantClient | Cs2Client | undefined {
@@ -499,6 +523,7 @@ export class RecordingSessionService implements RecordingService {
       this.warnStorage(outputDir)
       if (diskLevel(free, settings) === 'stop') throw new RecorderError('disk_full', tr('磁碟剩餘空間低於停止門檻，無法開始錄影'))
       const frames = await readFrames(gameProfileDir(this.deps.profileDir, game), game)
+      const vcam = settings.backend === 'builtin' ? await this.virtualCamera(settings.virtualCam) : null
       const gameAspect = await (this.deps.readGameAspect ?? readGameAspect)(game)
       this.log(`game aspect ${gameAspect ?? 'unknown'}`)
       const id = sessionId()
@@ -577,7 +602,8 @@ export class RecordingSessionService implements RecordingService {
           render_enabled: settings.systemAudioEnabled, render_gain: settings.systemGain, render_source: settings.gameAudioOnly ? 'game' : 'device',
           // Aditor's preview playback would otherwise be re-recorded and pile up in system audio.
           exclude_pid: process.pid, mic_mono: settings.micMono }, frames,
-        capture, ...(capture === 'hook' ? { hook_dir: this.deps.obsHookDir } : {}), capture_cursor: settings.captureCursor })
+        capture, ...(capture === 'hook' ? { hook_dir: this.deps.obsHookDir } : {}), capture_cursor: settings.captureCursor,
+        ...(vcam ? { vcam } : {}) })
       await current.writes
       if (this.active !== current || current.ending) return false
       await this.checkDisk(current)
@@ -663,7 +689,11 @@ export class RecordingSessionService implements RecordingService {
         }
         break
       case 'warning':
-        if (!session.ending && typeof event.message === 'string') this.notice('warning', event.message)
+        if (session.ending || typeof event.message !== 'string') break
+        if (event.code === 'vcam_unavailable') {
+          this.notice('warning', tr('虛擬攝影機無法啟動，錄影照常進行。若 OBS 的虛擬攝影機正在使用中，請先在 OBS 停止它：{error}',
+            { error: event.message.replace(/^vcam_unavailable:\s*/, '') }))
+        } else this.notice('warning', event.message)
         break
       case 'stopped':
         if (!session.ending) void this.serialize(() => this.crashed(session,

@@ -8,6 +8,7 @@ mod aac;
 pub mod ffi;
 mod ffmpeg;
 mod hardware;
+pub(crate) use hardware::Nv12Scaler;
 mod mux;
 mod nvenc;
 

@@ -210,6 +210,8 @@ const messages: MessageTable = {
   '錄影範本的 ROI 無效': 'The recording template\'s ROI is invalid.',
   '認不出這支影片是哪個遊戲，請在卡片上選擇 Apex 或 Valorant。': 'Could not tell which game this video shows. Choose Apex or Valorant on its card.',
   '{game} 尚不支援逐局分割，本次整段錄成一個檔': '{game} cannot be split per match yet, so this recording is saved as one file.',
+  '虛擬攝影機無法啟動，錄影照常進行。若 OBS 的虛擬攝影機正在使用中，請先在 OBS 停止它：{error}': 'The virtual camera could not start; recording continues. If the OBS virtual camera is in use, stop it in OBS first: {error}',
+  '找不到 OBS 虛擬攝影機驅動，本次不輸出虛擬攝影機。請安裝 OBS Studio（只要安裝，不用開啟），再重新開始錄影': 'The OBS Virtual Camera driver was not found, so no virtual camera output this time. Install OBS Studio (it does not need to be running), then start recording again.',
   'CS2 沒有傳送遊戲狀態，本次整段保留不分局。若剛安裝 Aditor，請重新啟動 CS2 以啟用逐局分割與擊殺紀錄': 'CS2 is not sending game state, so this recording is kept whole instead of split per match. If you just installed Aditor, restart CS2 to enable per-match splitting and kill tracking.',
   '媒體庫已有同名影片': 'The library already has a video at that path.',
   '無法偵測遊戲程序：{error}': 'Could not detect the game process: {error}',

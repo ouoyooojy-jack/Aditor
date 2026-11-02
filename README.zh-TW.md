@@ -15,6 +15,7 @@
 - **支援 Counter-Strike 2**：透過 Valve 官方的 Game State Integration（GSI）取得分局、回合勝負、擊殺與死亡，不分析畫面、不注入遊戲，偵測本身幾乎不佔資源；錄影（畫面擷取與硬體編碼）的成本與 VALORANT 相同，請見 [錄影對遊戲幀時間的影響](docs/recording-gpu-cost.md)。Aditor 啟動時會自動在 CS2 的 `game/csgo/cfg` 放入 `gamestate_integration_aditor.cfg`（只傳到本機 `127.0.0.1:3123`，並附隨機 token）；CS2 只在啟動時讀取設定，第一次安裝後請重新啟動 CS2。CS2 影片的事件只來自錄影當下，無法重新分析。
 - **預設一局一個檔**：VALORANT（Riot Client API）與 CS2（GSI）都按對局切檔，加時賽（例如 15:13）仍屬於同一局；熱身不錄進對局檔。
 - **暫存與保存資料夾**：錄影先放在 `<儲存位置>/Recordings`（暫存），30 天後自動刪除；在影片卡上按「保存」會把影片連同分析結果移到 `<儲存位置>/Saved`，永久保留。收藏的影片、被專案使用中的影片，以及安裝本版本以前的舊錄影都不會被自動刪除。
+- **虛擬攝影機（給網頁版 Discord 用）**：設定 → 錄影 →「虛擬攝影機」選 720p30／720p60／1080p30。錄影時，Aditor 會把已經擷取到的遊戲畫面在顯示卡上縮成 NV12，再送進 OBS Virtual Camera 驅動的共享記憶體；在 Discord（瀏覽器）開攝影機選「OBS Virtual Camera」即可，不必再讓 Chrome 擷取一次螢幕。需要安裝 OBS Studio 取得驅動（不用開啟 OBS）；OBS 自己的虛擬攝影機正在使用時無法同時輸出。沒在錄影時，攝影機會顯示 OBS 的預設畫面。Discord 端仍由瀏覽器編碼，請用 `chrome://webrtc-internals` 確認有用到硬體編碼。
 - **不自動錄 Apex Legends**：仍可匯入並分析 Apex 影片，但偵測到 Apex 啟動時不會自動錄影。
 - 預設錄影為 1080p / 60fps、HEVC、最快的編碼預設、不錄滑鼠游標（可在設定改成 720p 或開啟游標）。
 

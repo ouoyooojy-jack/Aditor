@@ -8,7 +8,7 @@ import {
   SettingsSetResult
 } from '../shared/settings'
 import { AutoClipParams } from '../shared/types'
-import { RECORDING_RANGES, type RecordingSettings } from '../shared/recording'
+import { RECORDING_RANGES, VIRTUAL_CAM_MODES, type RecordingSettings } from '../shared/recording'
 import { validateOutDir } from './settings-ipc'
 import { LANGUAGE_SETTINGS } from '../shared/locale'
 import { isSafeLocalDirPath } from './safe-path'
@@ -112,6 +112,7 @@ function pickRecording(v: unknown, base: RecordingSettings): RecordingSettings {
     diskStopGb: Math.min(diskWarnGb, clampRecordingNumber(s.diskStopGb, RECORDING_RANGES.diskStopGb, base.diskStopGb)),
     notifyMatch: pickBool(s.notifyMatch, base.notifyMatch),
     captureCursor: pickBool(s.captureCursor, base.captureCursor),
+    virtualCam: pickEnum(s.virtualCam, VIRTUAL_CAM_MODES, base.virtualCam),
     captureMethod: pickEnum(s.captureMethod, ['auto', 'wgc', 'dda', 'hook'] as const, base.captureMethod),
     openOnGameExit: pickBool(s.openOnGameExit, base.openOnGameExit)
   }

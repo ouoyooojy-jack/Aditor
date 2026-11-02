@@ -181,6 +181,32 @@ describe('recording service state machine', () => {
     expect(JSON.parse(fs.readFileSync(path.join(dir, 'recording.json'), 'utf8'))).toMatchObject({ mode: 'session', game: 'cs2' })
   })
 
+  it('feeds the virtual camera only when its driver is installed and the built-in recorder is used', async () => {
+    const value = rig()
+    value.settings.virtualCam = '720p30'
+    value.deps.vcamInstalled = vi.fn(async () => true)
+    value.deps.writeVcamFormat = vi.fn(async () => {})
+    value.service.start()
+    await waitFor(() => commands(value, 'start').length === 1)
+    expect(commands(value, 'start')[0].vcam).toEqual({ width: 1280, height: 720, fps: 30 })
+    expect(value.deps.writeVcamFormat).toHaveBeenCalledWith({ width: 1280, height: 720, fps: 30 })
+
+    const missing = rig()
+    missing.settings.virtualCam = '1080p30'
+    missing.deps.vcamInstalled = vi.fn(async () => false)
+    missing.service.start()
+    await waitFor(() => commands(missing, 'start').length === 1)
+    expect(commands(missing, 'start')[0].vcam).toBeUndefined()
+    expect(vi.mocked(missing.deps.notify).mock.calls.some(([level, message]) => level === 'warning' && message.includes('OBS 虛擬攝影機'))).toBe(true)
+
+    const off = rig()
+    off.deps.vcamInstalled = vi.fn(async () => true)
+    off.service.start()
+    await waitFor(() => commands(off, 'start').length === 1)
+    expect(commands(off, 'start')[0].vcam).toBeUndefined()
+    expect(off.deps.vcamInstalled).not.toHaveBeenCalled()
+  })
+
   it('keeps recording when the storage probe fails', async () => {
     const value = rig()
     value.deps.probeStorage = vi.fn(async () => { throw new Error('probe failed') })
