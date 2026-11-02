@@ -1,7 +1,9 @@
 import type { Event, StackFrame } from '@sentry/electron/main'
 
 // Public ingest key, not an auth token. Upload credentials belong only in the build environment.
-export const SENTRY_DSN = 'https://5c57897479340b1a622630935c43a4fb@o4512296943747072.ingest.us.sentry.io/4512296977760256'
+// Empty in this fork: its errors must not go to the upstream project's Sentry. Put your own project's DSN here to
+// enable diagnostics; with no DSN the SDK is never initialized, whatever the setting says.
+export const SENTRY_DSN = ''
 
 /** Matches the 500-character cap redactTelemetryText applies, so nothing is silently cut after the user submits. */
 export const MAX_USER_REPORT_LENGTH = 500

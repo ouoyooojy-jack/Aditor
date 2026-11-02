@@ -77,6 +77,7 @@ function withinReportBudget(now: number): boolean {
 
 /** Called after userData is set and before app.ready; disabled installs never initialize the SDK. */
 export function initializeTelemetry(consent: boolean): void {
+  consent = consent && SENTRY_DSN !== ''
   allowed = consent
   ipcMain.handle('telemetry:enabled', () => started && allowed)
   ipcMain.handle('telemetry:report', (_event, message: unknown) => reportUserFeedback(message))

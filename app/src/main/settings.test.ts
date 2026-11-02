@@ -96,7 +96,7 @@ describe('settings store', () => {
     fs.writeFileSync(file, '{ "telemetryEnabled": tru', 'utf-8')
     expect(loadSettings(file)).toMatchObject({ telemetryEnabled: false, recording: { autoRecord: false } })
 
-    fs.writeFileSync(file, JSON.stringify(DEFAULT_SETTINGS).slice(0, -40), 'utf-8')
+    fs.writeFileSync(file, JSON.stringify({ ...DEFAULT_SETTINGS, telemetryEnabled: true }).slice(0, -40), 'utf-8')
     expect(loadSettings(file)).toMatchObject({ telemetryEnabled: true, recording: { autoRecord: true } })
   })
 

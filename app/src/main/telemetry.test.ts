@@ -3,6 +3,11 @@ import type { ChildDiagnostic } from '../shared/child-diagnostics'
 
 const fake = vi.hoisted(() => ({ switches: new Set<string>(), init: vi.fn(), handle: vi.fn(), send: vi.fn(async () => ({})), captureEvent: vi.fn((_event: any) => 'test-event') }))
 vi.mock('electron', () => ({ app: { isPackaged: false, getVersion: () => '0.3.0', commandLine: { hasSwitch: (name: string) => fake.switches.has(name) } }, ipcMain: { handle: fake.handle } }))
+// This fork ships no DSN, which keeps the SDK off; these tests exercise the reporting path with a placeholder one.
+vi.mock('../shared/telemetry', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../shared/telemetry')>(),
+  SENTRY_DSN: 'https://public@example.invalid/1'
+}))
 vi.mock('@sentry/electron/main', () => ({
   init: fake.init, IPCMode: { Protocol: 2 },
   captureEvent: fake.captureEvent,

@@ -14,10 +14,11 @@ describe('telemetry privacy boundary', () => {
       expect(redactTelemetryText(`Cannot read '${value}'`)).toBe("Cannot read '[local path]'")
     }
   })
-  it('enables new and legacy defaults while preserving an explicit opt-out', () => {
+  it('keeps diagnostics off by default and for invalid values, while preserving an explicit choice', () => {
     for (const raw of [{}, { telemetryEnabled: 'true' }, { telemetryEnabled: 1 }]) {
-      expect(migrateSettings(raw).telemetryEnabled).toBe(true)
+      expect(migrateSettings(raw).telemetryEnabled).toBe(false)
     }
+    expect(migrateSettings({ telemetryEnabled: true }).telemetryEnabled).toBe(true)
     expect(migrateSettings({ telemetryEnabled: false }).telemetryEnabled).toBe(false)
   })
 

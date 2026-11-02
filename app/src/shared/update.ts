@@ -11,7 +11,7 @@ export const UPDATE_CHANNELS = {
 } as const
 
 /** Page for manually downloading a new version (used for portable builds or when an update fails). */
-export const RELEASES_URL = 'https://github.com/ShiQu1218/Aditor/releases/latest'
+export const RELEASES_URL = 'https://github.com/ouoyooojy-jack/Aditor/releases/latest'
 
 export type UpdateState =
   /** Development mode or portable build: automatic updates are unavailable. */

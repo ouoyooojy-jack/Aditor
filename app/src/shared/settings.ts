@@ -48,7 +48,7 @@ export interface Settings {
   projectAutosave: boolean
   /** Automatically check GitHub for updates; discovery never downloads or installs (installed builds only; manual checks are unaffected). */
   autoUpdate: boolean
-  /** Sentry diagnostics are on by default; an explicit opt-out is preserved. Enabling takes effect after restart. */
+  /** Sentry diagnostics are off by default (this fork has no Sentry project); enabling takes effect after restart. */
   telemetryEnabled: boolean
   /** Default export folder (null prompts each time). */
   defaultOutDir: string | null
@@ -112,7 +112,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoSuggestOnOpen: true,
   projectAutosave: true,
   autoUpdate: true,
-  telemetryEnabled: true,
+  telemetryEnabled: false,
   defaultOutDir: null,
   projectTrackCollapsed: 'auto',
   sameDayVideosCollapsed: false,

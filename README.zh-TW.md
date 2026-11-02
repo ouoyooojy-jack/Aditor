@@ -17,6 +17,7 @@
 - **暫存與保存資料夾**：錄影先放在 `<儲存位置>/Recordings`（暫存），30 天後自動刪除；在影片卡上按「保存」會把影片連同分析結果移到 `<儲存位置>/Saved`，永久保留。收藏的影片、被專案使用中的影片，以及安裝本版本以前的舊錄影都不會被自動刪除。
 - **虛擬攝影機（給網頁版 Discord 用）**：設定 → 錄影 →「虛擬攝影機」選 720p30／720p60／1080p30。錄影時，Aditor 會把已經擷取到的遊戲畫面在顯示卡上縮成 NV12，再送進 OBS Virtual Camera 驅動的共享記憶體；在 Discord（瀏覽器）開攝影機選「OBS Virtual Camera」即可，不必再讓 Chrome 擷取一次螢幕。需要安裝 OBS Studio 取得驅動（不用開啟 OBS）；OBS 自己的虛擬攝影機正在使用時無法同時輸出。沒在錄影時，攝影機會顯示 OBS 的預設畫面。Discord 端仍由瀏覽器編碼，請用 `chrome://webrtc-internals` 確認有用到硬體編碼。
 - **不自動錄 Apex Legends**：仍可匯入並分析 Apex 影片，但偵測到 Apex 啟動時不會自動錄影。
+- **版本 0.5.0，從本分支更新**：自動更新與「開啟下載頁面」都指向 `ouoyooojy-jack/Aditor` 的 Releases，不會被上游的新版覆蓋。錯誤與效能診斷（Sentry）預設關閉且不會送出：本分支沒有自己的 Sentry 專案，要啟用請在 `app/src/shared/telemetry.ts` 填入你自己的 DSN。
 - 預設錄影為 1080p / 60fps、HEVC、最快的編碼預設、不錄滑鼠游標（可在設定改成 720p 或開啟游標）。
 
 **下載：** [Releases](https://github.com/ShiQu1218/Aditor/releases)（Windows 10 / 11 64 位元；安裝版或免安裝版）

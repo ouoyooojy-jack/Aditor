@@ -57,9 +57,10 @@ electronLanguages:
   - ja
   - ko
 # Auto-update source: each release must upload the installer, .blockmap, and latest.yml (build.ps1 only generates them; it does not upload).
+# Updates come from this fork's releases, not the upstream project's, so they never replace these changes.
 publish:
   provider: github
-  owner: ShiQu1218
+  owner: ouoyooojy-jack
   repo: Aditor
 # Filenames must not contain spaces: GitHub replaces spaces with "." in uploaded filenames, which no longer matches latest.yml.
 portable:
